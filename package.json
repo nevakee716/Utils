@@ -1,0 +1,21 @@
+{
+  "name": "Utils",
+  "version": "6.0.1",
+  "description": "Custom Function Used in Many Library",
+  "main": "src/Utils.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nevakee716/Utils.git"
+  },
+  "author": "Mathias Pfauwadel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nevakee716/Utils/issues"
+  },
+  "homepage": "https://github.com/nevakee716/Utils/wiki",
+  "wiki": "https://github.com/nevakee716/Utils/wiki",
+  "evolve-version": "4.1 - 4.5"
+}

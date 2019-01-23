@@ -166,6 +166,7 @@
         cwAPI.customLibs.utils = {};
 
     }
+    cwAPI.customLibs.utils.version = 1.1;
     cwAPI.customLibs.utils.layoutsByNodeId = {};
     cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
     cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;

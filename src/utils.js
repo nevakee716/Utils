@@ -140,6 +140,15 @@
     };
 
 
+    var copyToClipboard = function(str) {
+      const el = document.createElement('textarea');
+      el.value = str;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    };
+
 
     /********************************************************************************
     Configs : add trigger for single page
@@ -161,5 +170,6 @@
     cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
     cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
     cwAPI.customLibs.utils.manageContextualNodes = manageContextualNodes;
+    cwAPI.customLibs.utils.copyToClipboard = copyToClipboard;
 
 }(cwAPI, jQuery));

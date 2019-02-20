@@ -172,5 +172,6 @@
     cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
     cwAPI.customLibs.utils.manageContextualNodes = manageContextualNodes;
     cwAPI.customLibs.utils.copyToClipboard = copyToClipboard;
+    cwAPI.customLibs.utils.parseNode = parseNode;
 
 }(cwAPI, jQuery));

@@ -114,7 +114,7 @@
         for (let associationNode in parent) {
             if (
                 parent.hasOwnProperty(associationNode) &&
-                parent[associationNode] !== null
+                parent[associationNode] !== null && parent[associationNode] !== undefined
             ) {
                 let objectToRemove = [];
                 let contextualNode = config.indexOf(associationNode) !== -1;
@@ -239,15 +239,20 @@
                 }
             }
         }
+        bound.bottom = bound.bottom * 1.1;
+        bound.top = bound.top * 0.9;
+        bound.right = bound.right *1.1;
+        bound.left = bound.left *0.9;
+
 
         // Calculate the height and width of the content
         var trimHeight = bound.bottom - bound.top,
             trimWidth = bound.right - bound.left,
             trimmed = ctx.getImageData(
-                bound.left,
-                bound.top,
-                trimWidth,
-                trimHeight
+                bound.left*0.9,
+                bound.top*0.9,
+                trimWidth*1.2,
+                trimHeight*1.2
             );
 
         copy.canvas.width = trimWidth;

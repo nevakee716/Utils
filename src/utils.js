@@ -278,7 +278,7 @@
     if (cwAPI.customLibs.utils === undefined) {
         cwAPI.customLibs.utils = {};
     }
-    cwAPI.customLibs.utils.version = 1.2;
+    cwAPI.customLibs.utils.version = 1.3;
     cwAPI.customLibs.utils.layoutsByNodeId = {};
     cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
     cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;

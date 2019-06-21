@@ -64,33 +64,36 @@
 
         parseNode(parent, function(child, associationNode, empty) {
             if (empty) {
-            } else if (config.indexOf(associationNode) !== -1) {
+
+            } else {
+                manageHiddenNodes(child.associations, config,bNodeIDOfParent);
+                if (config.indexOf(associationNode) !== -1) {
                 // jumpAndMerge when hidden
-                childrenToRemove.push(associationNode);
-                for (let nextassociationNode in child.associations) {
-                    if (child.associations.hasOwnProperty(nextassociationNode)) {
-                        if (!parent.hasOwnProperty(nextassociationNode)) parent[nextassociationNode] = [];
+                    childrenToRemove.push(associationNode);
+                    for (let nextassociationNode in child.associations) {
+                        if (child.associations.hasOwnProperty(nextassociationNode)) {
+                            if (!parent.hasOwnProperty(nextassociationNode)) parent[nextassociationNode] = [];
 
-                        for (let i = 0; i < child.associations[nextassociationNode].length; i += 1) {
-                            let nextChild = child.associations[nextassociationNode][i];
-                            if(idTable[associationNode] === undefined) idTable[associationNode] = [];
-                            if(idTable[associationNode].indexOf(nextChild.objectTypeScriptName  + "_" + nextChild.object_id) === -1) {
-                                idTable[associationNode].push(nextChild.objectTypeScriptName  + "_" + nextChild.object_id);
-                                if(bNodeIDOfParent) {
-                                    let o = {};
-                                    o.node = associationNode;
-                                    o.obj = nextChild;
-                                    childrenToAdd.push(o);
+                            for (let i = 0; i < child.associations[nextassociationNode].length; i += 1) {
+                                let nextChild = child.associations[nextassociationNode][i];
+                                if(idTable[associationNode] === undefined) idTable[associationNode] = [];
+                                if(idTable[associationNode].indexOf(nextChild.objectTypeScriptName  + "_" + nextChild.object_id) === -1) {
+                                    idTable[associationNode].push(nextChild.objectTypeScriptName  + "_" + nextChild.object_id);
+                                    if(bNodeIDOfParent) {
+                                        let o = {};
+                                        o.node = associationNode;
+                                        o.obj = nextChild;
+                                        childrenToAdd.push(o);
+                                    }
+                                    else parent[nextassociationNode].push(nextChild);                               
                                 }
-                                else parent[nextassociationNode].push(nextChild);                               
-                            }
 
+                            }
                         }
                     }
                 }
-            } else {
-                manageHiddenNodes(child.associations, config,bNodeIDOfParent);
             }
+
         });
 
         childrenToRemove.forEach(function(c) {

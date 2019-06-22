@@ -72,8 +72,6 @@
                     childrenToRemove.push(associationNode);
                     for (let nextassociationNode in child.associations) {
                         if (child.associations.hasOwnProperty(nextassociationNode)) {
-                            if (!parent.hasOwnProperty(nextassociationNode)) parent[nextassociationNode] = [];
-
                             for (let i = 0; i < child.associations[nextassociationNode].length; i += 1) {
                                 let nextChild = child.associations[nextassociationNode][i];
                                 if(idTable[associationNode] === undefined) idTable[associationNode] = [];
@@ -85,7 +83,10 @@
                                         o.obj = nextChild;
                                         childrenToAdd.push(o);
                                     }
-                                    else parent[nextassociationNode].push(nextChild);                               
+                                    else {
+                                        if (!parent.hasOwnProperty(nextassociationNode)) parent[nextassociationNode] = [];
+                                        parent[nextassociationNode].push(nextChild);          
+                                    }                     
                                 }
 
                             }

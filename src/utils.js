@@ -106,8 +106,8 @@
             parent[c.node].push(c.obj)
         });
 
-        for(let id in idTable){
-            if(idTable.hasOwnProperty(id)){
+        for(let id in parent){
+            if(parent.hasOwnProperty(id)){
                 parent[id].sort(function(a,b){
                     return a.name.localeCompare(b.name)
                 });

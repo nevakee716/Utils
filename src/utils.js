@@ -415,6 +415,84 @@
     else return cwApi.customLibs.utils.customLayoutConfiguration[configName];
   };
 
+  var setupWebSocketForSocial = function(callback) {
+    cwApi.CwWebSocketConnection = null;
+
+    cwApi.CwAsyncLoader.load("signalR", function() {
+      var h = $.connection.cwEvolveHub,
+        dataServicesHub = $.connection.cwEvolveDataServices,
+        $connection,
+        mConnectionSlow,
+        mReconnecting,
+        mDisconnected,
+        mStateChange;
+
+      if (cwApi.isUndefined($.connection)) {
+        return callback && callback(null);
+      }
+      if (cwApi.signalRSeverPath !== undefined) {
+        $.connection.hub.url = cwApi.signalRSeverPath;
+      }
+
+      cwApi.CwDiagramEditorLoader.info("start initialization of the ws connection...");
+      h.client.updateUsersCount = function(users) {
+        cwApi.CwDiagramEditorLoader.info("updateUsersCount (cwEvolveHub)", users);
+      };
+      cwApi.isWebSocketConnected = false;
+
+      cwApi.CwDataServicesApi = new cwApi.CwBoomerang(dataServicesHub, cwApi.getSiteId(), ["flatQuery"], false);
+      cwApi.CwDataServicesApi.registerWebSockets();
+
+      cwApi.pluginManager.execute("CwBone.RegisterWebSockets");
+
+      mConnectionSlow = function() {
+        cwApi.Log.Info("web socket connection is slow...");
+      };
+      mReconnecting = function() {
+        if (!cwApi.isUndefinedOrNull(cwApi.cwEModeler.CwDiagramEditor)) {
+          cwApi.cwEModeler.CwDiagramEditorHelperStatic.updateConnectionStatus(false);
+        }
+        cwApi.Log.Info("web socket connection try reconnecting...");
+      };
+
+      mDisconnected = function() {
+        cwApi.Log.Info("web socket has been disconnected...");
+      };
+
+      mStateChange = function(change) {
+        cwApi.Log.Info(cwApi.format("web socket has been changed to {0}...", change.newState));
+        cwApi.isWebSocketConnected = change.newState === $.signalR.connectionState.connected;
+
+        // Check if Diagram Editor module is loaded
+        if (!cwApi.isUndefined(cwApi.cwEModeler.CwDiagramEditorHelperStatic)) {
+          cwApi.cwEModeler.CwDiagramEditorHelperStatic.updateConnectionStatus(cwApi.isWebSocketConnected);
+        }
+      };
+
+      // unbind the events, if the user log off / login
+      $connection = $($.connection.hub);
+      $connection.unbind("onConnectionSlow");
+      $connection.unbind("onReconnecting");
+      $connection.unbind("onDisconnect");
+      $connection.unbind("onStateChanged");
+
+      $.connection.hub.connectionSlow(mConnectionSlow);
+      $.connection.hub.reconnecting(mReconnecting);
+      $.connection.hub.disconnected(mDisconnected);
+      $.connection.hub.stateChanged(mStateChange);
+
+      $.connection.hub.start(cwApi.getWebSocketOptions()).done(function() {
+        if (!cwApi.isUndefinedOrNull(cwApi.cwEModeler.CwDiagramEditor)) {
+          cwApi.cwEModeler.CwDiagramEditorHelperStatic.updateConnectionStatus(true);
+        }
+        cwApi.CwDiagramEditorLoader.info("connection done");
+        h.server.hello();
+        cwApi.CwWebSocketConnection = true;
+        return callback && callback(null);
+      });
+    });
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -443,4 +521,5 @@
   cwAPI.customLibs.utils.setLayoutToPercentHeight = setLayoutToPercentHeight;
   cwAPI.customLibs.utils.getCustomDisplayString = getCustomDisplayString;
   cwAPI.customLibs.utils.getCustomLayoutConfiguration = getCustomLayoutConfiguration;
+  cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;
 })(cwAPI, jQuery);

@@ -165,7 +165,13 @@
 
   var getCustomDisplayString = function(cds, item) {
     var itemDisplayName, titleOnMouseOver, link, itemLabel, markedForDeletion, linkTag, linkEndTag, popOutInfo, popOutSplit, popOutName, popOutText, popoutElement;
-    var popOutEnableByDefault = true;
+    var popOutEnableByDefault = true,
+      defaultIcon = "fa fa-external-link";
+    let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
+    if (config) {
+      popOutEnableByDefault = config.displayPopoutByDefault;
+      if (config.defaultIcon) defaultIcon = config.defaultIcon;
+    }
     // use the display property scriptname
     var p = new cwApi.CwDisplayProperties(cds, false);
     itemLabel = p.getDisplayString(item);
@@ -183,7 +189,7 @@
     }
 
     if (popOutEnableByDefault && itemDisplayName.indexOf("<#") === -1 && itemDisplayName.indexOf("<@") === -1) {
-      popOutText = '<i class="fa fa-external-link" aria-hidden="true"></i>';
+      popOutText = '<i class="' + defaultIcon + '" aria-hidden="true"></i>';
       popOutName = cwApi.replaceSpecialCharacters(item.objectTypeScriptName) + "_diagram_popout";
       if (cwAPI.ViewSchemaManager.pageExists(popOutName) === true) {
         popoutElement = ' <span class="cdsEnhancedDiagramPopOutIcon" onclick="cwAPI.customFunction.openDiagramPopoutWithID(' + item.object_id + ",'" + popOutName + "', event);\">" + popOutText + "</span>";

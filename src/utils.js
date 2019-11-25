@@ -147,20 +147,13 @@
   };
 
   var getItemDisplayString = function(view, item) {
-    var l,
-      getDisplayStringFromLayout = function(layout) {
-        return layout.displayProperty.getDisplayString(item);
-      };
-
     if (!cwAPI.customLibs.utils.layoutsByNodeId.hasOwnProperty(view + "_" + item.nodeID)) {
-      if (cwAPI.getViewsSchemas()[view].NodesByID.hasOwnProperty(item.nodeID)) {
-        var layoutOptions = cwAPI.getViewsSchemas()[view].NodesByID[item.nodeID].LayoutOptions;
-        cwAPI.customLibs.utils.layoutsByNodeId[view + "_" + item.nodeID] = new cwApi.cwLayouts[item.layoutName](layoutOptions, cwAPI.getViewsSchemas()[view]);
-      } else {
-        return item.name;
+      if (cwAPI.getViewsSchemas()[view].NodesByID.hasOwnProperty(item.nodeID) && cwAPI.getViewsSchemas()[view].NodesByID[item.nodeID].LayoutOptions) {
+        var cds = cwAPI.getViewsSchemas()[view].NodesByID[item.nodeID].LayoutOptions.DisplayPropertyScriptName;
+        return cwAPI.customLibs.utils.getCustomDisplayString(cds, item);
       }
     }
-    return getDisplayStringFromLayout(cwAPI.customLibs.utils.layoutsByNodeId[view + "_" + item.nodeID]);
+    return item.name;
   };
 
   var getCustomDisplayString = function(cds, item) {
@@ -514,7 +507,7 @@
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
   }
-  cwAPI.customLibs.utils.version = 1.6;
+  cwAPI.customLibs.utils.version = 1.8;
   cwAPI.customLibs.utils.layoutsByNodeId = {};
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;

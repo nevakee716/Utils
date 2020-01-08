@@ -113,22 +113,51 @@
     }
   };
 
+  var cleanEmptyNodes = function(parent, config) {
+    var hasData = true;
+    if (config.indexOf(parent.nodeID) !== -1) hasData = false;
+    for (let associationNode in parent.associations) {
+      if (parent.associations.hasOwnProperty(associationNode) && parent.associations[associationNode] !== null && parent.associations[associationNode] !== undefined) {
+        let objectToRemove = [];
+
+        for (let i = 0; i < parent.associations[associationNode].length; i += 1) {
+          let child = parent.associations[associationNode][i];
+          if (cleanEmptyNodes(child, config) === false) {
+            objectToRemove.push(i);
+          }
+        }
+
+        for (let i = objectToRemove.length - 1; i >= 0; i -= 1) {
+          delete parent.associations[associationNode].splice(objectToRemove[i], 1);
+        }
+
+        if (config.indexOf(parent.nodeID) !== -1 && !hasData) hasData = parent.associations[associationNode].length > 0;
+      }
+    }
+
+    return hasData;
+  };
+
   var manageContextualNodes = function(parent, config, mainID) {
     var childrenToRemove = [];
-    var context = true;
+
+    // we check if there is at least one contextual node, then put context to false
+    var context = !Object.keys(parent).some(function(assNode) {
+      return config.indexOf(assNode) !== -1;
+    });
 
     for (let associationNode in parent) {
       if (parent.hasOwnProperty(associationNode) && parent[associationNode] !== null && parent[associationNode] !== undefined) {
         let objectToRemove = [];
         let contextualNode = config.indexOf(associationNode) !== -1;
+        // we self delete if we are a contextual node
         if (contextualNode) {
-          context = false;
           childrenToRemove.push(associationNode);
         }
 
         for (let i = 0; i < parent[associationNode].length; i += 1) {
           let child = parent[associationNode][i];
-          if (contextualNode && mainID === child.object_id) context = true;
+          if (contextualNode && mainID === child.object_id) context = true; // the main object is present inside the node; so we keep the parent node
           if (contextualNode === false && manageContextualNodes(child.associations, config, mainID) === false) {
             objectToRemove.push(i);
           }
@@ -139,11 +168,32 @@
       }
     }
 
+    // we remove the association used for contextual information
     childrenToRemove.forEach(function(c) {
       delete parent[c];
     });
 
     return context;
+  };
+
+  var manageFilterByBaseObjectNodes = function(parent, config, mainID) {
+    for (let associationNode in parent) {
+      if (parent.hasOwnProperty(associationNode) && parent[associationNode] !== null && parent[associationNode] !== undefined) {
+        let objectToRemove = [];
+        let contextualNode = config.indexOf(associationNode) !== -1;
+
+        for (let i = 0; i < parent[associationNode].length; i += 1) {
+          let child = parent[associationNode][i];
+          manageFilterByBaseObjectNodes(child.associations, config, mainID);
+          if (contextualNode === true && child.object_id !== mainID) {
+            objectToRemove.push(i);
+          }
+        }
+        for (let i = objectToRemove.length - 1; i >= 0; i -= 1) {
+          delete parent[associationNode].splice(objectToRemove[i], 1);
+        }
+      }
+    }
   };
 
   var getItemDisplayString = function(view, item) {
@@ -512,6 +562,9 @@
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
   cwAPI.customLibs.utils.manageContextualNodes = manageContextualNodes;
+  cwAPI.customLibs.utils.manageFilterByBaseObjectNodes = manageFilterByBaseObjectNodes;
+
+  cwAPI.customLibs.utils.cleanEmptyNodes = cleanEmptyNodes;
   cwAPI.customLibs.utils.copyToClipboard = copyToClipboard;
   cwAPI.customLibs.utils.parseNode = parseNode;
   cwAPI.customLibs.utils.trimCanvas = trimCanvas;

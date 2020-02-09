@@ -542,6 +542,60 @@
     });
   };
 
+  var createPopOutFormultipleObjects = function(objects) {
+    var that, o, $div, $ul, i;
+    if (objects.length === 0) return;
+    cwApi.CwPopout.show(cwApi.mm.getObjectType(objects[0].objectTypeScriptName).pluralName);
+    cwApi.CwPopout.onClose(function() {
+      cwApi.unfreeze();
+    });
+
+    let popOutName = cwApi.replaceSpecialCharacters(objects[0].objectTypeScriptName) + "_diagram_popout";
+    let popoutExist = cwAPI.ViewSchemaManager.pageExists(popOutName);
+    //function outputImage($li, explodedDiagram) {
+    //    var image = new Image();
+    //    const random = cwApi.getRandomNumber();
+    //    image.src = cwApi.getSiteMediaPath() + 'images/diagrams/diagram' + explodedDiagram.object_id + '.png?' + random;
+    //    image.onload = function () {
+    //        $li.children().first().before('<img class="cwMiniImageDiagramPreview" src="' + image.src + '"/>');
+    //    };
+    //}
+    o = [];
+    that = this;
+    o.push('<form action="#" class="form-select">');
+    if (popoutExist) o.push("<h3>", $.i18n.prop("diagram_selectAObjectToView"), "</h3>");
+    o.push('<div class="cwDiagramExplosionMultipleChoice"><ul>');
+    o.push("</ul></div>");
+    o.push("</form>");
+    $div = $(o.join(""));
+    cwApi.CwPopout.setContent($div);
+
+    function createDialog(obj) {
+      var miniO = [],
+        $li;
+      miniO.push("<li>");
+      if (cwAPI.customLibs && cwAPI.customLibs.utils && cwAPI.customLibs.utils.getCustomDisplayString) {
+        miniO.push(cwAPI.customLibs.utils.getCustomDisplayString("", obj));
+        $li = $(miniO.join(""));
+      } else {
+        miniO.push("<div>", obj.name, "</div>", "</li>");
+        $li = $(miniO.join(""));
+        if (popoutExist) {
+          $li.click(function() {
+            cwAPI.cwDiagramPopoutHelper.openDiagramPopout(obj, popOutName);
+          });
+        }
+      }
+
+      $ul.append($li);
+    }
+
+    $ul = $div.find("ul").first();
+    for (i = 0; i < objects.length; i += 1) {
+      createDialog(objects[i]);
+    }
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -557,7 +611,7 @@
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
   }
-  cwAPI.customLibs.utils.version = 1.9;
+  cwAPI.customLibs.utils.version = 2.0;
   cwAPI.customLibs.utils.layoutsByNodeId = {};
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
@@ -574,4 +628,6 @@
   cwAPI.customLibs.utils.getCustomDisplayString = getCustomDisplayString;
   cwAPI.customLibs.utils.getCustomLayoutConfiguration = getCustomLayoutConfiguration;
   cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;
+
+  cwAPI.customLibs.utils.createPopOutFormultipleObjects = createPopOutFormultipleObjects;
 })(cwAPI, jQuery);

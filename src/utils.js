@@ -563,7 +563,6 @@
     o = [];
     that = this;
     o.push('<form action="#" class="form-select">');
-    if (popoutExist) o.push("<h3>", $.i18n.prop("diagram_selectAObjectToView"), "</h3>");
     o.push('<div class="cwDiagramExplosionMultipleChoice"><ul>');
     o.push("</ul></div>");
     o.push("</form>");

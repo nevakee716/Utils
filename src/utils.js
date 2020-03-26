@@ -117,7 +117,11 @@
     var hasData = true;
     if (config.indexOf(parent.nodeID) !== -1) hasData = false;
     for (let associationNode in parent.associations) {
-      if (parent.associations.hasOwnProperty(associationNode) && parent.associations[associationNode] !== null && parent.associations[associationNode] !== undefined) {
+      if (
+        parent.associations.hasOwnProperty(associationNode) &&
+        parent.associations[associationNode] !== null &&
+        parent.associations[associationNode] !== undefined
+      ) {
         let objectToRemove = [];
 
         for (let i = 0; i < parent.associations[associationNode].length; i += 1) {
@@ -207,7 +211,18 @@
   };
 
   var getCustomDisplayString = function(cds, item) {
-    var itemDisplayName, titleOnMouseOver, link, itemLabel, markedForDeletion, linkTag, linkEndTag, popOutInfo, popOutSplit, popOutName, popOutText, popoutElement;
+    var itemDisplayName,
+      titleOnMouseOver,
+      link,
+      itemLabel,
+      markedForDeletion,
+      linkTag,
+      linkEndTag,
+      popOutInfo,
+      popOutSplit,
+      popOutName,
+      popOutText,
+      popoutElement;
     var popOutEnableByDefault = true,
       defaultIcon = "fa fa-external-link";
     let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
@@ -219,7 +234,12 @@
     var p = new cwApi.CwDisplayProperties(cds, false);
     itemLabel = p.getDisplayString(item);
     link = cwApi.getSingleViewHash(item.objectTypeScriptName, item.object_id);
-    titleOnMouseOver = this.hasTooltip && !cwApi.isUndefined(item.properties.description) ? (cwApi.cwEditProperties.cwEditPropertyMemo.isHTMLContent(item.properties.description) ? $(item.properties.description).text() : item.properties.description) : "";
+    titleOnMouseOver =
+      this.hasTooltip && !cwApi.isUndefined(item.properties.description)
+        ? cwApi.cwEditProperties.cwEditPropertyMemo.isHTMLContent(item.properties.description)
+          ? $(item.properties.description).text()
+          : item.properties.description
+        : "";
 
     markedForDeletion = cwApi.isObjectMarkedForDeletion(item) ? " markedForDeletion" : "";
 
@@ -235,7 +255,14 @@
       popOutText = '<i class="' + defaultIcon + '" aria-hidden="true"></i>';
       popOutName = cwApi.replaceSpecialCharacters(item.objectTypeScriptName) + "_diagram_popout";
       if (cwAPI.ViewSchemaManager.pageExists(popOutName) === true) {
-        popoutElement = ' <span class="cdsEnhancedDiagramPopOutIcon" onclick="cwAPI.customFunction.openDiagramPopoutWithID(' + item.object_id + ",'" + popOutName + "', event);\">" + popOutText + "</span>";
+        popoutElement =
+          ' <span class="cdsEnhancedDiagramPopOutIcon" onclick="cwAPI.customFunction.openDiagramPopoutWithID(' +
+          item.object_id +
+          ",'" +
+          popOutName +
+          "', event);\">" +
+          popOutText +
+          "</span>";
         itemDisplayName = popoutElement + "  " + itemDisplayName;
       }
     } else {
@@ -250,7 +277,14 @@
           popOutText = popOutSplit[0];
         }
         if (cwAPI.ViewSchemaManager.pageExists(popOutName) === true) {
-          popoutElement = '<span class="cdsEnhancedDiagramPopOutIcon" onclick="cwAPI.customFunction.openDiagramPopoutWithID(' + item.object_id + ",'" + popOutName + "');\">" + popOutText + "</span>";
+          popoutElement =
+            '<span class="cdsEnhancedDiagramPopOutIcon" onclick="cwAPI.customFunction.openDiagramPopoutWithID(' +
+            item.object_id +
+            ",'" +
+            popOutName +
+            "');\">" +
+            popOutText +
+            "</span>";
         } else {
           popoutElement = "";
         }
@@ -339,7 +373,11 @@
 
   var getPaletteShape = function(obj, diagramTemplate, errors) {
     let palette;
-    if (obj && obj.properties.type_id && diagramTemplate.diagram.paletteEntries[obj.objectTypeScriptName.toUpperCase() + "|" + obj.properties.type_id]) {
+    if (
+      obj &&
+      obj.properties.type_id &&
+      diagramTemplate.diagram.paletteEntries[obj.objectTypeScriptName.toUpperCase() + "|" + obj.properties.type_id]
+    ) {
       palette = diagramTemplate.diagram.paletteEntries[obj.objectTypeScriptName.toUpperCase() + "|" + obj.properties.type_id];
     } else if (obj && diagramTemplate.diagram.paletteEntries[obj.objectTypeScriptName.toUpperCase() + "|0"]) {
       palette = diagramTemplate.diagram.paletteEntries[obj.objectTypeScriptName.toUpperCase() + "|0"];
@@ -370,13 +408,17 @@
             if (undefined === errors.properties) {
               errors.properties = {};
             }
-            errors.properties[region.SourcePropertyTypeScriptName] = cwAPI.mm.getProperty(obj.objectTypeScriptName, region.SourcePropertyTypeScriptName).name;
+            errors.properties[region.SourcePropertyTypeScriptName] = cwAPI.mm.getProperty(
+              obj.objectTypeScriptName,
+              region.SourcePropertyTypeScriptName
+            ).name;
           }
           if (region.RegionType < 3 && region.RegionData && !obj.associations.hasOwnProperty(region.RegionData.Key)) {
             if (undefined === errors.associations) {
               errors.associations = {};
             }
-            errors.associations[region.RegionData.Key] = region.RegionData.AssociationTypeScriptName + " => " + cwAPI.mm.getObjectType(region.RegionData.TargetObjectTypeScriptName).name;
+            errors.associations[region.RegionData.Key] =
+              region.RegionData.AssociationTypeScriptName + " => " + cwAPI.mm.getObjectType(region.RegionData.TargetObjectTypeScriptName).name;
           }
         });
 
@@ -448,7 +490,15 @@
   };
 
   var getCustomLayoutConfiguration = function(configName) {
-    if (cwApi.customLibs.utils.customLayoutConfiguration === undefined) {
+    let localConfiguration = localStorage.getItem(cwApi.getSiteId() + "_" + cwApi.getDeployNumber() + "_coffeeMakerConfiguration");
+
+    if (localConfiguration) {
+      try {
+        cwApi.customLibs.utils.customLayoutConfiguration = JSON.parse(localConfiguration);
+      } catch (e) {
+        return null;
+      }
+    } else if (cwApi.customLibs.utils.customLayoutConfiguration === undefined) {
       let view = cwAPI.ViewSchemaManager.getPageSchema("z_custom_layout_configuration");
       if (view) {
         try {
@@ -612,7 +662,7 @@
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
   }
-  cwAPI.customLibs.utils.version = 2.0;
+  cwAPI.customLibs.utils.version = 2.1;
   cwAPI.customLibs.utils.layoutsByNodeId = {};
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;

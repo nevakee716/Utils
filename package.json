@@ -1,6 +1,6 @@
 {
   "name": "Utils",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "description": "Custom Function Used in Many Library",
   "main": "src/Utils.js",
   "scripts": {

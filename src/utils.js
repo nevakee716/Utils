@@ -1,4 +1,4 @@
-(function(cwApi, $) {
+(function (cwApi, $) {
   "use strict";
   // config
   var removeDiagramPopOut = true,
@@ -7,7 +7,7 @@
   /********************************************************************************
     Custom Action for Single and Index Page : See Impact here http://bit.ly/2qy5bvB
     *********************************************************************************/
-  cwCustomerSiteActions.doActionsForSingle_Custom = function(rootNode) {
+  cwCustomerSiteActions.doActionsForSingle_Custom = function (rootNode) {
     var currentView, url, i, cwView;
     currentView = cwAPI.getCurrentView();
 
@@ -21,7 +21,7 @@
     }
   };
 
-  cwCustomerSiteActions.doActionsForIndex_Custom = function(rootNode) {
+  cwCustomerSiteActions.doActionsForIndex_Custom = function (rootNode) {
     var currentView, url, i, cwView;
     currentView = cwAPI.getCurrentView();
 
@@ -35,7 +35,7 @@
     }
   };
 
-  var parseNode = function(child, callback) {
+  var parseNode = function (child, callback) {
     for (var associationNode in child) {
       if (child.hasOwnProperty(associationNode) && child[associationNode] !== null) {
         for (var i = 0; i < child[associationNode].length; i += 1) {
@@ -47,7 +47,7 @@
     }
   };
 
-  var parseNodeForComplementary = function(child, callback) {
+  var parseNodeForComplementary = function (child, callback) {
     for (var associationNode in child) {
       if (child.hasOwnProperty(associationNode) && child[associationNode] !== null) {
         for (var i = 0; i < child[associationNode].length; i += 1) {
@@ -59,12 +59,12 @@
     }
   };
 
-  var manageHiddenNodes = function(parent, config, bNodeIDOfParent) {
+  var manageHiddenNodes = function (parent, config, bNodeIDOfParent) {
     var childrenToRemove = [],
       childrenToAdd = [],
       idTable = {};
 
-    parseNode(parent, function(child, associationNode, empty) {
+    parseNode(parent, function (child, associationNode, empty) {
       if (empty) {
       } else {
         manageHiddenNodes(child.associations, config, bNodeIDOfParent);
@@ -95,25 +95,25 @@
       }
     });
 
-    childrenToRemove.forEach(function(c) {
+    childrenToRemove.forEach(function (c) {
       delete parent[c];
     });
 
-    childrenToAdd.forEach(function(c) {
+    childrenToAdd.forEach(function (c) {
       if (parent[c.node] === undefined) parent[c.node] = [];
       parent[c.node].push(c.obj);
     });
 
     for (let id in parent) {
       if (parent.hasOwnProperty(id)) {
-        parent[id].sort(function(a, b) {
+        parent[id].sort(function (a, b) {
           return a.name.localeCompare(b.name);
         });
       }
     }
   };
 
-  var cleanEmptyNodes = function(parent, config) {
+  var cleanEmptyNodes = function (parent, config) {
     var hasData = true;
     if (config.indexOf(parent.nodeID) !== -1) hasData = false;
     for (let associationNode in parent.associations) {
@@ -142,11 +142,11 @@
     return hasData;
   };
 
-  var manageContextualNodes = function(parent, config, mainID) {
+  var manageContextualNodes = function (parent, config, mainID) {
     var childrenToRemove = [];
 
     // we check if there is at least one contextual node, then put context to false
-    var context = !Object.keys(parent).some(function(assNode) {
+    var context = !Object.keys(parent).some(function (assNode) {
       return config.indexOf(assNode) !== -1;
     });
 
@@ -173,14 +173,14 @@
     }
 
     // we remove the association used for contextual information
-    childrenToRemove.forEach(function(c) {
+    childrenToRemove.forEach(function (c) {
       delete parent[c];
     });
 
     return context;
   };
 
-  var manageFilterByBaseObjectNodes = function(parent, config, mainID) {
+  var manageFilterByBaseObjectNodes = function (parent, config, mainID) {
     for (let associationNode in parent) {
       if (parent.hasOwnProperty(associationNode) && parent[associationNode] !== null && parent[associationNode] !== undefined) {
         let objectToRemove = [];
@@ -200,7 +200,7 @@
     }
   };
 
-  var getItemDisplayString = function(view, item) {
+  var getItemDisplayString = function (view, item) {
     if (!cwAPI.customLibs.utils.layoutsByNodeId.hasOwnProperty(view + "_" + item.nodeID)) {
       if (cwAPI.getViewsSchemas()[view].NodesByID.hasOwnProperty(item.nodeID) && cwAPI.getViewsSchemas()[view].NodesByID[item.nodeID].LayoutOptions) {
         var cds = cwAPI.getViewsSchemas()[view].NodesByID[item.nodeID].LayoutOptions.DisplayPropertyScriptName;
@@ -210,19 +210,8 @@
     return item.name;
   };
 
-  var getCustomDisplayString = function(cds, item) {
-    var itemDisplayName,
-      titleOnMouseOver,
-      link,
-      itemLabel,
-      markedForDeletion,
-      linkTag,
-      linkEndTag,
-      popOutInfo,
-      popOutSplit,
-      popOutName,
-      popOutText,
-      popoutElement;
+  var getCustomDisplayString = function (cds, item, nodeID, hasTooltip) {
+    var itemDisplayName, titleOnMouseOver, link, itemLabel, markedForDeletion, linkTag, linkEndTag;
     var popOutEnableByDefault = true,
       defaultIcon = "fa fa-external-link";
     let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
@@ -235,7 +224,7 @@
     itemLabel = p.getDisplayString(item);
     link = cwApi.getSingleViewHash(item.objectTypeScriptName, item.object_id);
     titleOnMouseOver =
-      this.hasTooltip && !cwApi.isUndefined(item.properties.description)
+      hasTooltip && !cwApi.isUndefined(item.properties.description)
         ? cwApi.cwEditProperties.cwEditPropertyMemo.isHTMLContent(item.properties.description)
           ? $(item.properties.description).text()
           : item.properties.description
@@ -243,55 +232,21 @@
 
     markedForDeletion = cwApi.isObjectMarkedForDeletion(item) ? " markedForDeletion" : "";
 
-    linkTag = "<a class='" + this.nodeID + markedForDeletion + "' href='" + link + "'>";
+    linkTag = "<a class='" + nodeID + markedForDeletion + "' href='" + link + "'>";
     linkEndTag = "</a>";
     if (itemLabel.indexOf("<@") !== -1 && itemLabel.indexOf("\\<@") === -1) {
-      itemDisplayName = itemLabel.replace(/<@/g, linkTag).replace(/@>/g, linkEndTag);
+      let info = itemLabel.split("<@")[1].split("@>")[0];
+      if (info.split("@")[0] === "contrib" && cwApi.cwUser.isCurrentUserSocial()) {
+        itemDisplayName = itemLabel.replace(/<@.*@>/g, "");
+      } else {
+        itemDisplayName = itemLabel.replace(/<@[contrib@]*/g, linkTag).replace(/@>/g, linkEndTag);
+      }
     } else {
       itemDisplayName = linkTag + itemLabel + linkEndTag;
     }
-
-    if (popOutEnableByDefault && itemDisplayName.indexOf("<#") === -1 && itemDisplayName.indexOf("<@") === -1) {
-      popOutText = '<i class="' + defaultIcon + '" aria-hidden="true"></i>';
-      popOutName = cwApi.replaceSpecialCharacters(item.objectTypeScriptName) + "_diagram_popout";
-      if (cwAPI.ViewSchemaManager.pageExists(popOutName) === true) {
-        popoutElement =
-          ' <span class="cdsEnhancedDiagramPopOutIcon" onclick="cwAPI.customFunction.openDiagramPopoutWithID(' +
-          item.object_id +
-          ",'" +
-          popOutName +
-          "', event);\">" +
-          popOutText +
-          "</span>";
-        itemDisplayName = popoutElement + "  " + itemDisplayName;
-      }
-    } else {
-      while (itemDisplayName.indexOf("<#") !== -1 && itemDisplayName.indexOf("#>") !== -1) {
-        popOutInfo = itemDisplayName.split("<#")[1].split("#>")[0];
-        if (popOutInfo.indexOf("#") === -1) {
-          popOutName = popOutInfo;
-          popOutText = '<i class="fa fa-external-link" aria-hidden="true"></i>';
-        } else {
-          popOutSplit = popOutInfo.split("#");
-          popOutName = popOutSplit[1];
-          popOutText = popOutSplit[0];
-        }
-        if (cwAPI.ViewSchemaManager.pageExists(popOutName) === true) {
-          popoutElement =
-            '<span class="cdsEnhancedDiagramPopOutIcon" onclick="cwAPI.customFunction.openDiagramPopoutWithID(' +
-            item.object_id +
-            ",'" +
-            popOutName +
-            "');\">" +
-            popOutText +
-            "</span>";
-        } else {
-          popoutElement = "";
-        }
-        itemDisplayName = itemDisplayName.replace("<#" + popOutInfo + "#>", popoutElement);
-      }
+    if (cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItem) {
+      itemDisplayName = cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItem(config, itemDisplayName, item);
     }
-
     itemDisplayName = '<a class="obj" >' + itemDisplayName + "</a>";
 
     $("span").attr("data-children-number");
@@ -299,7 +254,7 @@
     return itemDisplayName;
   };
 
-  var copyToClipboard = function(str) {
+  var copyToClipboard = function (str) {
     const el = document.createElement("textarea");
     el.value = str;
     document.body.appendChild(el);
@@ -308,7 +263,7 @@
     document.body.removeChild(el);
   };
 
-  var trimCanvas = function(c) {
+  var trimCanvas = function (c) {
     var ctx = c.getContext("2d"),
       copy = document.createElement("canvas").getContext("2d"),
       pixels = ctx.getImageData(0, 0, c.width, c.height),
@@ -371,7 +326,7 @@
     return copy.canvas;
   };
 
-  var getPaletteShape = function(obj, diagramTemplate, errors) {
+  var getPaletteShape = function (obj, diagramTemplate, errors) {
     let palette;
     if (
       obj &&
@@ -392,7 +347,7 @@
     return palette;
   };
 
-  var shapeToImage = function(obj, diagramTemplate, errors, size) {
+  var shapeToImage = function (obj, diagramTemplate, errors, size) {
     console.log("Drawing " + obj.name + " with " + diagramTemplate.name);
     if (errors === undefined) errors = {};
     var self = this;
@@ -403,7 +358,7 @@
       if (palette) {
         var shape = {};
 
-        palette.Regions.forEach(function(region) {
+        palette.Regions.forEach(function (region) {
           if (region.RegionType >= 3 && region.RegionType < 8 && !obj.properties.hasOwnProperty(region.SourcePropertyTypeScriptName)) {
             if (undefined === errors.properties) {
               errors.properties = {};
@@ -459,19 +414,19 @@
         diagC.loop = 0;
         diagC.pictureGalleryLoader = new cwApi.CwPictureGalleryLoader.Loader(diagC);
 
-        diagC.loadRegionExplosionWithRuleAndRefProp = function() {
+        diagC.loadRegionExplosionWithRuleAndRefProp = function () {
           if (errors.explosionRegion !== true) {
             console.log("Explosion Region are not Supported Yet");
             errors.explosionRegion = true;
           }
         };
-        diagC.getNavigationDiagramsForObject = function() {
+        diagC.getNavigationDiagramsForObject = function () {
           if (errors.navigationRegion !== true) {
             console.log("Navigation Region are not Supported Yet");
             errors.navigationRegion = true;
           }
         };
-        diagC.getDiagramPopoutForShape = function() {};
+        diagC.getDiagramPopoutForShape = function () {};
         var shapeObj = new cwApi.Diagrams.CwDiagramShape(shape, palette, diagC);
 
         shapeObj.draw(ctx);
@@ -481,7 +436,7 @@
     }
   };
 
-  var setLayoutToPercentHeight = function(elementHTML, percent) {
+  var setLayoutToPercentHeight = function (elementHTML, percent) {
     // set height
     var titleReact = document.querySelector("#cw-top-bar").getBoundingClientRect();
     var topBarReact = document.querySelector(".page-top").getBoundingClientRect();
@@ -489,7 +444,7 @@
     elementHTML.setAttribute("style", "height:" + canvaHeight + "px");
   };
 
-  var getCustomLayoutConfiguration = function(configName) {
+  var getCustomLayoutConfiguration = function (configName) {
     let localConfiguration = localStorage.getItem(cwApi.getSiteId() + "_" + cwApi.getDeployNumber() + "_coffeeMakerConfiguration");
 
     if (localConfiguration) {
@@ -514,10 +469,10 @@
     else return cwApi.customLibs.utils.customLayoutConfiguration[configName];
   };
 
-  var setupWebSocketForSocial = function(callback) {
+  var setupWebSocketForSocial = function (callback) {
     cwApi.CwWebSocketConnection = null;
 
-    cwApi.CwAsyncLoader.load("signalR", function() {
+    cwApi.CwAsyncLoader.load("signalR", function () {
       var h = $.connection.cwEvolveHub,
         dataServicesHub = $.connection.cwEvolveDataServices,
         $connection,
@@ -534,7 +489,7 @@
       }
 
       cwApi.CwDiagramEditorLoader.info("start initialization of the ws connection...");
-      h.client.updateUsersCount = function(users) {
+      h.client.updateUsersCount = function (users) {
         cwApi.CwDiagramEditorLoader.info("updateUsersCount (cwEvolveHub)", users);
       };
       cwApi.isWebSocketConnected = false;
@@ -544,21 +499,21 @@
 
       cwApi.pluginManager.execute("CwBone.RegisterWebSockets");
 
-      mConnectionSlow = function() {
+      mConnectionSlow = function () {
         cwApi.Log.Info("web socket connection is slow...");
       };
-      mReconnecting = function() {
+      mReconnecting = function () {
         if (!cwApi.isUndefinedOrNull(cwApi.cwEModeler.CwDiagramEditor)) {
           cwApi.cwEModeler.CwDiagramEditorHelperStatic.updateConnectionStatus(false);
         }
         cwApi.Log.Info("web socket connection try reconnecting...");
       };
 
-      mDisconnected = function() {
+      mDisconnected = function () {
         cwApi.Log.Info("web socket has been disconnected...");
       };
 
-      mStateChange = function(change) {
+      mStateChange = function (change) {
         cwApi.Log.Info(cwApi.format("web socket has been changed to {0}...", change.newState));
         cwApi.isWebSocketConnected = change.newState === $.signalR.connectionState.connected;
 
@@ -580,7 +535,7 @@
       $.connection.hub.disconnected(mDisconnected);
       $.connection.hub.stateChanged(mStateChange);
 
-      $.connection.hub.start(cwApi.getWebSocketOptions()).done(function() {
+      $.connection.hub.start(cwApi.getWebSocketOptions()).done(function () {
         if (!cwApi.isUndefinedOrNull(cwApi.cwEModeler.CwDiagramEditor)) {
           cwApi.cwEModeler.CwDiagramEditorHelperStatic.updateConnectionStatus(true);
         }
@@ -592,11 +547,11 @@
     });
   };
 
-  var createPopOutFormultipleObjects = function(objects) {
+  var createPopOutFormultipleObjects = function (objects) {
     var that, o, $div, $ul, i;
     if (objects.length === 0) return;
     cwApi.CwPopout.show(cwApi.mm.getObjectType(objects[0].objectTypeScriptName).pluralName);
-    cwApi.CwPopout.onClose(function() {
+    cwApi.CwPopout.onClose(function () {
       cwApi.unfreeze();
     });
 
@@ -632,7 +587,7 @@
         miniO.push("<div>", obj.name, "</div>", "</li>");
         $li = $(miniO.join(""));
         if (popoutExist) {
-          $li.click(function() {
+          $li.click(function () {
             cwAPI.cwDiagramPopoutHelper.openDiagramPopout(obj, popOutName);
           });
         }
@@ -644,6 +599,90 @@
     $ul = $div.find("ul").first();
     for (i = 0; i < objects.length; i += 1) {
       createDialog(objects[i]);
+    }
+  };
+
+  var cwFilter = function () {
+    this.filters = [];
+  };
+
+  cwFilter.prototype.initWithString = function (configString) {
+    this.filters = configString.split("#").map(function (fString) {
+      let split = fString.split(":");
+      return {
+        Asset: split[0],
+        Operator: split.length > 1 ? split[1] : ">",
+        Value: split.length > 1 ? split[2] : 0,
+      };
+    });
+  };
+
+  cwFilter.prototype.init = function (filters) {
+    this.filters = filters;
+  };
+
+  cwFilter.prototype.addFilter = function (filter) {
+    this.filters.push(filters);
+  };
+
+  cwFilter.prototype.isMatching = function (item) {
+    let isActionToDo = true;
+    var self = this;
+    if (item) {
+      return this.filters.every(function (filter) {
+        return self.matchFilter(item, filter);
+      });
+    }
+  };
+
+  cwFilter.prototype.matchFilter = function (item, filter) {
+    let objPropertyValue, value;
+    // contributor
+    if (filter.Asset === "contrib") {
+      return !cwApi.cwUser.isCurrentUserSocial();
+    } else if (item.associations.hasOwnProperty(filter.Asset)) {
+      //associations
+      objPropertyValue = item.associations[filter.Asset].length;
+      value = filter.Value;
+    } else if (item.properties.hasOwnProperty(filter.Asset)) {
+      let propertyType = cwApi.mm.getProperty(item.objectTypeScriptName, filter.Asset);
+      value = filter.Value;
+      if (filter.Asset === "id") {
+        // changing id to make usable like other property
+        objPropertyValue = item.object_id;
+      } else if (propertyType.type === "Lookup") {
+        objPropertyValue = item.properties[filter.Asset + "_id"];
+      } else if (propertyType.type === "Date") {
+        objPropertyValue = new Date(item.properties[filter.Asset]);
+        objPropertyValue = objPropertyValue.getTime();
+        let d = filter.Value;
+        if (d.indexOf("{@currentDate}") !== -1) {
+          d = d.split("-");
+          let dateOffset = 24 * 60 * 60 * 1000 * parseInt(d[1]);
+          let today = new Date();
+          value = today.getTime() - dateOffset;
+        } else {
+          d = new Date(d);
+          value = d.getTime();
+        }
+      } else {
+        objPropertyValue = item.properties[filter.Asset];
+      }
+    } else return;
+
+    switch (filter.Operator) {
+      case "=":
+        return objPropertyValue == value;
+      case "<":
+        return objPropertyValue < value;
+      case ">":
+        return objPropertyValue > value;
+      case "!=":
+        return objPropertyValue != value;
+      case "In":
+        return value.indexOf(objPropertyValue) !== -1;
+      default:
+        return false;
     }
   };
 
@@ -662,7 +701,7 @@
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
   }
-  cwAPI.customLibs.utils.version = 2.1;
+  cwAPI.customLibs.utils.version = 2.2;
   cwAPI.customLibs.utils.layoutsByNodeId = {};
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
@@ -679,6 +718,6 @@
   cwAPI.customLibs.utils.getCustomDisplayString = getCustomDisplayString;
   cwAPI.customLibs.utils.getCustomLayoutConfiguration = getCustomLayoutConfiguration;
   cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;
-
+  cwAPI.customLibs.utils.cwFilter = cwFilter;
   cwAPI.customLibs.utils.createPopOutFormultipleObjects = createPopOutFormultipleObjects;
 })(cwAPI, jQuery);

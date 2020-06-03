@@ -547,10 +547,10 @@
     });
   };
 
-  var createPopOutFormultipleObjects = function (objects) {
+  var createPopOutFormultipleObjects = function (objects, popoutName) {
     var that, o, $div, $ul, i;
     if (objects.length === 0) return;
-    cwApi.CwPopout.show(cwApi.mm.getObjectType(objects[0].objectTypeScriptName).pluralName);
+    cwApi.CwPopout.show(popoutName ? popoutName : cwApi.mm.getObjectType(objects[0].objectTypeScriptName).pluralName);
     cwApi.CwPopout.onClose(function () {
       cwApi.unfreeze();
     });
@@ -579,8 +579,8 @@
         $li;
       miniO.push("<li>");
       if (cwAPI.customLibs && cwAPI.customLibs.utils && cwAPI.customLibs.utils.getCustomDisplayString) {
-        let cds = "{name}";
-        if (obj.properties.hasOwnProperty("displayname")) cds = "{displayname}";
+        let cds = popoutExist ? "<#" + popOutName + "#> {name}" : "{name}";
+        if (obj.properties.hasOwnProperty("displayname")) cds = cds.replace("{name}", "{displayname}");
         miniO.push(cwAPI.customLibs.utils.getCustomDisplayString(cds, obj));
         $li = $(miniO.join(""));
       } else {
@@ -701,7 +701,7 @@
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
   }
-  cwAPI.customLibs.utils.version = 2.2;
+  cwAPI.customLibs.utils.version = 2.3;
   cwAPI.customLibs.utils.layoutsByNodeId = {};
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;

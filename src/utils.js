@@ -578,17 +578,17 @@
       var miniO = [],
         $li;
       miniO.push("<li>");
-      if (cwAPI.customLibs && cwAPI.customLibs.utils && cwAPI.customLibs.utils.getCustomDisplayString) {
+      if (cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItem) {
         let cds = popoutExist ? "<#" + popOutName + "#> {name}" : "{name}";
         if (obj.properties.hasOwnProperty("displayname")) cds = cds.replace("{name}", "{displayname}");
-        miniO.push(cwAPI.customLibs.utils.getCustomDisplayString(cds, obj));
+        miniO.push(cwApi.customLibs.utils.getCustomDisplayString(cds, obj));
         $li = $(miniO.join(""));
       } else {
         miniO.push("<div>", obj.name, "</div>", "</li>");
         $li = $(miniO.join(""));
         if (popoutExist) {
           $li.click(function () {
-            cwAPI.cwDiagramPopoutHelper.openDiagramPopout(obj, popOutName);
+            cwApi.cwDiagramPopoutHelper.openDiagramPopout(obj, popOutName);
           });
         }
       }

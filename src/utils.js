@@ -644,19 +644,27 @@
       //associations
       objPropertyValue = item.associations[filter.Asset].length;
       value = filter.Value;
-    } else if (item.properties.hasOwnProperty(filter.Asset)) {
-      let propertyType = cwApi.mm.getProperty(item.objectTypeScriptName, filter.Asset);
+    } else if (item.properties.hasOwnProperty(filter.Asset) || item.iProperties[filter.Asset.replace("cwintersection_", "")]) {
+      let iAsso =
+        item.properties[filter.Asset] === undefined && item.iProperties[filter.Asset.replace("cwintersection_", "")] !== undefined ? true : false;
+
+      filter.Asset = iAsso ? filter.Asset.replace("cwintersection_", "") : filter.Asset;
+      objPropertyValue = iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset];
+      let propertyType = iAsso
+        ? cwApi.mm.getProperty(item.iObjectTypeScriptName, filter.Asset)
+        : cwApi.mm.getProperty(item.objectTypeScriptName, filter.Asset);
+
       value = filter.Value;
       if (filter.Asset === "id") {
         // changing id to make usable like other property
         objPropertyValue = item.object_id;
       } else if (propertyType.type === "Lookup") {
-        objPropertyValue = item.properties[filter.Asset + "_id"];
+        objPropertyValue = iAsso ? item.iProperties[filter.Asset + "_id"] : item.properties[filter.Asset + "_id"];
       } else if (propertyType.type === "Date") {
-        objPropertyValue = new Date(item.properties[filter.Asset]);
+        objPropertyValue = new Date(iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset]);
         objPropertyValue = objPropertyValue.getTime();
         let d = filter.Value;
-        if (d.indexOf("{@currentDate}") !== -1) {
+        if (d.indexOf("{@currentDate}") !== -1 || d.indexOf("{@currentdate}") !== -1) {
           d = d.split("-");
           let dateOffset = 24 * 60 * 60 * 1000 * parseInt(d[1]);
           let today = new Date();
@@ -666,7 +674,7 @@
           value = d.getTime();
         }
       } else {
-        objPropertyValue = item.properties[filter.Asset];
+        objPropertyValue = iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset];
       }
     } else return;
 

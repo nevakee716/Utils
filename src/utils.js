@@ -694,6 +694,39 @@
     }
   };
 
+  var editObject = function (oldObject, newObject, reload, callback) {
+    var changeset, sourceItem, targetItem;
+
+    oldObject.displayNames = Object.keys(oldObject.properties).map(function (pScriptname) {
+      return cwApi.mm.getProperty(oldObject.objectTypeScriptName, pScriptname).displayNames;
+    });
+    oldObject.associations = [];
+    newObject.displayNames = Object.keys(oldObject.properties).map(function (pScriptname) {
+      return cwApi.mm.getProperty(oldObject.objectTypeScriptName, pScriptname).displayNames;
+    });
+    newObject.associations = [];
+    cwApi.pendingChanges.clear();
+    changeset = new cwApi.CwPendingChangeset(oldObject.objectTypeScriptName, oldObject.object_id, oldObject.name, true, 1);
+    changeset.compareAndAddChanges(oldObject, newObject);
+    cwApi.pendingChanges.addChangeset(changeset);
+    cwApi.pendingChanges.sendAsChangeRequest(
+      undefined,
+      function (response) {
+        if (cwApi.statusIsKo(response)) {
+          cwApi.notificationManager.addNotification($.i18n.prop("editmode_someOfTheChangesWereNotUpdated"), "error");
+        } else {
+          cwApi.notificationManager.addNotification($.i18n.prop("editmode_yourChangeHaveBeenSaved"));
+          if (reload) window.location.hash = window.location.hash + "&reload=true";
+        }
+        callback(response);
+      },
+      function (error) {
+        callback(error);
+        cwApi.notificationManager.addNotification(error.status + " - " + error.responseText, "error");
+      }
+    );
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -715,6 +748,8 @@
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
   cwAPI.customLibs.utils.manageContextualNodes = manageContextualNodes;
   cwAPI.customLibs.utils.manageFilterByBaseObjectNodes = manageFilterByBaseObjectNodes;
+
+  cwAPI.customLibs.utils.editObject = editObject;
 
   cwAPI.customLibs.utils.cleanEmptyNodes = cleanEmptyNodes;
   cwAPI.customLibs.utils.copyToClipboard = copyToClipboard;

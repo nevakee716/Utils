@@ -557,14 +557,7 @@
 
     let popOutName = cwApi.replaceSpecialCharacters(objects[0].objectTypeScriptName) + "_diagram_popout";
     let popoutExist = cwAPI.ViewSchemaManager.pageExists(popOutName);
-    //function outputImage($li, explodedDiagram) {
-    //    var image = new Image();
-    //    const random = cwApi.getRandomNumber();
-    //    image.src = cwApi.getSiteMediaPath() + 'images/diagrams/diagram' + explodedDiagram.object_id + '.png?' + random;
-    //    image.onload = function () {
-    //        $li.children().first().before('<img class="cwMiniImageDiagramPreview" src="' + image.src + '"/>');
-    //    };
-    //}
+
     o = [];
     that = this;
     o.push('<form action="#" class="form-select">');
@@ -658,6 +651,8 @@
       if (filter.Asset === "id") {
         // changing id to make usable like other property
         objPropertyValue = item.object_id;
+      } else if (propertyType.type === "Boolean") {
+        value = value === "true" ? true : false;
       } else if (propertyType.type === "Lookup") {
         objPropertyValue = iAsso ? item.iProperties[filter.Asset + "_id"] : item.properties[filter.Asset + "_id"];
       } else if (propertyType.type === "Date") {

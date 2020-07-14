@@ -239,7 +239,7 @@
       if (info.split("@")[0] === "contrib" && cwApi.cwUser.isCurrentUserSocial()) {
         itemDisplayName = itemLabel.replace(/<@.*@>/g, "");
       } else {
-        itemDisplayName = itemLabel.replace(/<@[contrib@]*/g, linkTag).replace(/@>/g, linkEndTag);
+        itemDisplayName = itemLabel.replace(/<@(contrib@)*/g, linkTag).replace(/@>/g, linkEndTag);
       }
     } else {
       itemDisplayName = linkTag + itemLabel + linkEndTag;

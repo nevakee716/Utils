@@ -263,6 +263,28 @@
     document.body.removeChild(el);
   };
 
+  var copyCanvasToClipboard = function (canvas) {
+    if (canvas.msToBlob) {
+      //for IE
+      var blob = canvas.msToBlob();
+      canvas.focus();
+      cwApi.customLibs.utils.copyToImageClipboard(blob);
+    } else {
+      canvas.toBlob(function (blob) {
+        canvas.focus();
+        cwApi.customLibs.utils.copyToImageClipboard(blob);
+      }, "image/png");
+    }
+  };
+
+  var copyToImageClipboard = function (blob) {
+    navigator.clipboard.write([
+      new ClipboardItem({
+        [blob.type]: blob,
+      }),
+    ]);
+  };
+
   var trimCanvas = function (c) {
     var ctx = c.getContext("2d"),
       copy = document.createElement("canvas").getContext("2d"),
@@ -737,7 +759,7 @@
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
   }
-  cwAPI.customLibs.utils.version = 2.4;
+  cwAPI.customLibs.utils.version = 2.5;
   cwAPI.customLibs.utils.layoutsByNodeId = {};
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
@@ -748,6 +770,9 @@
 
   cwAPI.customLibs.utils.cleanEmptyNodes = cleanEmptyNodes;
   cwAPI.customLibs.utils.copyToClipboard = copyToClipboard;
+  cwAPI.customLibs.utils.copyToImageClipboard = copyToImageClipboard;
+  cwAPI.customLibs.utils.copyCanvasToClipboard = copyCanvasToClipboard;
+
   cwAPI.customLibs.utils.parseNode = parseNode;
   cwAPI.customLibs.utils.trimCanvas = trimCanvas;
   cwAPI.customLibs.utils.shapeToImage = shapeToImage;

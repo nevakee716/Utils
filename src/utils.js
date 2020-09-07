@@ -277,12 +277,16 @@
     }
   };
 
-  var copyToImageClipboard = function (blob) {
-    navigator.clipboard.write([
-      new ClipboardItem({
-        [blob.type]: blob,
-      }),
-    ]);
+  var copyToImageClipboard = function copyToImageClipboard(blob) {
+    function _defineProperty(obj, key, value) {
+      if (key in obj) {
+        Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
+      } else {
+        obj[key] = value;
+      }
+      return obj;
+    }
+    navigator.clipboard.write([new ClipboardItem(_defineProperty({}, blob.type, blob))]);
   };
 
   var trimCanvas = function (c) {

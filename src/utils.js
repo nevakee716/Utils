@@ -678,7 +678,7 @@
         // changing id to make usable like other property
         objPropertyValue = item.object_id;
       } else if (propertyType.type === "Boolean") {
-        value = value === "true" ? true : false;
+        value = value === "true" || value === true ? true : false;
       } else if (propertyType.type === "Lookup") {
         objPropertyValue = iAsso ? item.iProperties[filter.Asset + "_id"] : item.properties[filter.Asset + "_id"];
       } else if (propertyType.type === "Date") {

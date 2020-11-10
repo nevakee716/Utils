@@ -35,6 +35,20 @@
     }
   };
 
+  cwCustomerSiteActions.doActionsForAll_Custom = function (rootNode) {
+    var currentView, url, i, cwView;
+    currentView = cwAPI.getCurrentView();
+    if (currentView) cwView = currentView.cwView;
+
+    for (i in cwAPI.customLibs.doActionForAll) {
+      if (cwAPI.customLibs.doActionForAll.hasOwnProperty(i)) {
+        if (typeof cwAPI.customLibs.doActionForAll[i] === "function") {
+          cwAPI.customLibs.doActionForAll[i](rootNode, cwView);
+        }
+      }
+    }
+  };
+
   var parseNode = function (child, callback) {
     for (var associationNode in child) {
       if (child.hasOwnProperty(associationNode) && child[associationNode] !== null) {
@@ -760,6 +774,11 @@
   if (cwAPI.customLibs.doActionForIndex === undefined) {
     cwAPI.customLibs.doActionForIndex = {};
   }
+
+  if (cwAPI.customLibs.doActionForAll === undefined) {
+    cwAPI.customLibs.doActionForAll = {};
+  }
+
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
   }

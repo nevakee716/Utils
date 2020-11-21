@@ -225,6 +225,7 @@
   };
 
   var getCustomDisplayString = function (cds, item, nodeID, hasTooltip) {
+    if (cds.indexOf("ngDirectives") !== -1) return null;
     var itemDisplayName, titleOnMouseOver, link, itemLabel, markedForDeletion, linkTag, linkEndTag;
     var popOutEnableByDefault = true,
       defaultIcon = "fa fa-external-link";
@@ -762,6 +763,79 @@
     );
   };
 
+  var isObjectFavorite = function (objectTypeScriptName, object_id) {
+    let favList = cwAPI.CwBookmarkManager.getFavouriteList();
+    return (
+      favList[objectTypeScriptName] &&
+      favList[objectTypeScriptName].some(function (favObject) {
+        return favObject.object_id === object_id;
+      })
+    );
+  };
+
+  var addObjectAsFavorite = function (objectTypeScriptName, object_id, callback) {
+    cwApi.CwPendingEventsManager.setEvent("FavouriteBtnClick");
+    var sendData = {
+      itemProperties: {},
+      changedAssociations: [],
+      SkipWorkflow: true,
+    };
+    cwApi.cwFavourite.cwFavourite.buildAssociationList(
+      sendData.changedAssociations,
+      cwApi.mmDefinition.ASSOCIATION_SCRIPTNAME_USERTOANYOBJECT,
+      object_id,
+      objectTypeScriptName,
+      "",
+      "added"
+    );
+
+    cwApi.cwEditProperties.UpdateSocialFeatures(sendData, cwApi.currentUser.ID, cwApi.mmDefinition.OBJECTTYPE_SCRIPTNAME_USER, function (
+      updatedData
+    ) {
+      if (updatedData.status === "Ko") {
+        cwApi.notificationManager.addNotification(updatedData.error, "error");
+        cwApi.CwPendingEventsManager.deleteEvent("AddFavouriteToObject");
+      } else {
+        cwApi.cwFavourite.cwFavourite.updateProperties(
+          cwApi.mmDefinition.PROPERTYTYPE_SCRIPTNAME_FAVOURITE,
+          true,
+          updatedData.intersectionObjectProperties[0].intersectionObjectID,
+          cwApi.mmDefinition.INTERSECTION_OBJECT_SCRIPTNAME_USERTOANYOBJECT,
+          function (o) {
+            cwAPI.CwBookmarkManager.loadFavourites(callback);
+          }
+        );
+      }
+    });
+    cwApi.CwPendingEventsManager.deleteEvent("FavouriteBtnClick");
+  };
+
+  var removeObjectAsFavorite = function (objectTypeScriptName, object_id, callback) {
+    let favList = cwAPI.CwBookmarkManager.getFavouriteList();
+    return (
+      favList[objectTypeScriptName] &&
+      favList[objectTypeScriptName].some(function (favObject) {
+        if (favObject.object_id === object_id) {
+          cwApi.cwFavourite.cwFavourite.updateProperties(
+            cwApi.mmDefinition.PROPERTYTYPE_SCRIPTNAME_FAVOURITE,
+            false,
+            favObject.iProperties.id,
+            cwApi.mmDefinition.INTERSECTION_OBJECT_SCRIPTNAME_USERTOANYOBJECT,
+            function (updatedData) {
+              if (cwApi.statusIsKo(updatedData)) {
+                cwApi.notificationManager.addNotification(updatedData.error, "error");
+                cwApi.CwPendingEventsManager.deleteEvent("RemoveFavouriteFromObject");
+              } else {
+                cwAPI.CwBookmarkManager.loadFavourites(callback);
+              }
+            }
+          );
+          return true;
+        }
+      })
+    );
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -806,4 +880,7 @@
   cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;
   cwAPI.customLibs.utils.cwFilter = cwFilter;
   cwAPI.customLibs.utils.createPopOutFormultipleObjects = createPopOutFormultipleObjects;
+  cwAPI.customLibs.utils.isObjectFavorite = isObjectFavorite;
+  cwAPI.customLibs.utils.addObjectAsFavorite = addObjectAsFavorite;
+  cwAPI.customLibs.utils.removeObjectAsFavorite = removeObjectAsFavorite;
 })(cwAPI, jQuery);

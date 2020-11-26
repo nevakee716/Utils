@@ -695,7 +695,13 @@
       } else if (propertyType.type === "Boolean") {
         value = value === "true" || value === true ? true : false;
       } else if (propertyType.type === "Lookup") {
-        objPropertyValue = iAsso ? item.iProperties[filter.Asset + "_id"] : item.properties[filter.Asset + "_id"];
+        if (iAsso) {
+          objPropertyValue =
+            item.iProperties[filter.Asset + "_id"] == undefined ? item.iProperties[filter.Asset] : item.iProperties[filter.Asset + "_id"];
+        } else {
+          objPropertyValue =
+            item.properties[filter.Asset + "_id"] == undefined ? item.properties[filter.Asset] : item.properties[filter.Asset + "_id"];
+        }
       } else if (propertyType.type === "Date") {
         objPropertyValue = new Date(iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset]);
         objPropertyValue = objPropertyValue.getTime();
@@ -716,13 +722,13 @@
 
     switch (filter.Operator) {
       case "=":
-        return objPropertyValue == value;
+        return objPropertyValue.toString() == value.toString();
       case "<":
         return objPropertyValue < value;
       case ">":
         return objPropertyValue > value;
       case "!=":
-        return objPropertyValue != value;
+        return objPropertyValue.toString() != value.toString();
       case "In":
         return value.indexOf(objPropertyValue) !== -1;
       default:
@@ -789,24 +795,28 @@
       "added"
     );
 
-    cwApi.cwEditProperties.UpdateSocialFeatures(sendData, cwApi.currentUser.ID, cwApi.mmDefinition.OBJECTTYPE_SCRIPTNAME_USER, function (
-      updatedData
-    ) {
-      if (updatedData.status === "Ko") {
-        cwApi.notificationManager.addNotification(updatedData.error, "error");
-        cwApi.CwPendingEventsManager.deleteEvent("AddFavouriteToObject");
-      } else {
-        cwApi.cwFavourite.cwFavourite.updateProperties(
-          cwApi.mmDefinition.PROPERTYTYPE_SCRIPTNAME_FAVOURITE,
-          true,
-          updatedData.intersectionObjectProperties[0].intersectionObjectID,
-          cwApi.mmDefinition.INTERSECTION_OBJECT_SCRIPTNAME_USERTOANYOBJECT,
-          function (o) {
-            cwAPI.CwBookmarkManager.loadFavourites(callback);
-          }
-        );
+    cwApi.cwEditProperties.UpdateSocialFeatures(
+      sendData,
+      cwApi.currentUser.ID,
+      cwApi.mmDefinition.OBJECTTYPE_SCRIPTNAME_USER,
+      function (updatedData) {
+        if (updatedData.status === "Ko") {
+          cwApi.notificationManager.addNotification(updatedData.error, "error");
+          cwApi.CwPendingEventsManager.deleteEvent("AddFavouriteToObject");
+        } else {
+          cwApi.cwFavourite.cwFavourite.updateProperties(
+            cwApi.mmDefinition.PROPERTYTYPE_SCRIPTNAME_FAVOURITE,
+            true,
+            updatedData.intersectionObjectProperties[0].intersectionObjectID,
+            cwApi.mmDefinition.INTERSECTION_OBJECT_SCRIPTNAME_USERTOANYOBJECT,
+            function (o) {
+              cwApi.notificationManager.addNotification($.i18n.prop("notification_favoriteSet"));
+              cwAPI.CwBookmarkManager.loadFavourites(callback);
+            }
+          );
+        }
       }
-    });
+    );
     cwApi.CwPendingEventsManager.deleteEvent("FavouriteBtnClick");
   };
 
@@ -826,6 +836,7 @@
                 cwApi.notificationManager.addNotification(updatedData.error, "error");
                 cwApi.CwPendingEventsManager.deleteEvent("RemoveFavouriteFromObject");
               } else {
+                cwApi.notificationManager.addNotification($.i18n.prop("notification_favoriteUnSet"));
                 cwAPI.CwBookmarkManager.loadFavourites(callback);
               }
             }
@@ -834,6 +845,34 @@
         }
       })
     );
+  };
+
+  var shareWorkflow = function (objectName, objectId, objectTypeScriptName, message, rolesToShareWith, subject, actionLink, callback) {
+    let shareRequest = new cwApi.workflow.dataClasses.shareRequest.CwShareRequest(objectId, objectTypeScriptName, message);
+    var someDate = new Date();
+    var numberOfDaysToAdd = 9;
+    someDate.setDate(someDate.getDate() + numberOfDaysToAdd);
+    someDate = "01/" + someDate.getMonth() + "/" + someDate.getFullYear();
+    shareRequest.sendRequest(objectName, someDate, rolesToShareWith, subject, actionLink, function (response, loginLoaded) {
+      function complete() {
+        callback();
+      }
+
+      if (cwApi.statusIsKo(response)) {
+        if (!loginLoaded) {
+          if (response.code === cwAPI.cwConfigs.ErrorCodes.NoRecipientsWorkflow) {
+            cwApi.notificationManager.addNotification($.i18n.prop("workflow_thereAreNoValidRecipientsForThisRequest"), "error");
+            submitCtrlCallback(false, "");
+          } else {
+            cwApi.notificationManager.addNotification($.i18n.prop("workflow_somethingWentWrongWhileSharingThisPage"), "error");
+            complete();
+          }
+        }
+      } else {
+        cwApi.notificationManager.addNotification($.i18n.prop("workflow_thisPageHasBeenSharedWithUsersInTheSelectedRoles"));
+        complete();
+      }
+    });
   };
 
   /********************************************************************************
@@ -883,4 +922,5 @@
   cwAPI.customLibs.utils.isObjectFavorite = isObjectFavorite;
   cwAPI.customLibs.utils.addObjectAsFavorite = addObjectAsFavorite;
   cwAPI.customLibs.utils.removeObjectAsFavorite = removeObjectAsFavorite;
+  cwAPI.customLibs.utils.shareWorkflow = shareWorkflow;
 })(cwAPI, jQuery);

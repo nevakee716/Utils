@@ -862,7 +862,6 @@
         if (!loginLoaded) {
           if (response.code === cwAPI.cwConfigs.ErrorCodes.NoRecipientsWorkflow) {
             cwApi.notificationManager.addNotification($.i18n.prop("workflow_thereAreNoValidRecipientsForThisRequest"), "error");
-            submitCtrlCallback(false, "");
           } else {
             cwApi.notificationManager.addNotification($.i18n.prop("workflow_somethingWentWrongWhileSharingThisPage"), "error");
             complete();
@@ -908,6 +907,8 @@
   cwAPI.customLibs.utils.copyToClipboard = copyToClipboard;
   cwAPI.customLibs.utils.copyToImageClipboard = copyToImageClipboard;
   cwAPI.customLibs.utils.copyCanvasToClipboard = copyCanvasToClipboard;
+
+  cwAPI.customLibs.utils.openDiagramPopoutWithID = cwApi.customFunction.openDiagramPopoutWithID;
 
   cwAPI.customLibs.utils.parseNode = parseNode;
   cwAPI.customLibs.utils.trimCanvas = trimCanvas;

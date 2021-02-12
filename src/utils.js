@@ -717,8 +717,8 @@
         }
       } else {
         objPropertyValue = iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset];
-        objPropertyValue.replace("@currentCwUserName", cwAPI.cwUser.getCurrentUserItem().name);
-        objPropertyValue.replace("@currentCwUserId", cwAPI.cwUser.getCurrentUserItem().object_id);
+        value = value.replace("@currentCwUserName", cwAPI.cwUser.getCurrentUserItem().name);
+        value = value.replace("@currentCwUserId", cwAPI.cwUser.getCurrentUserItem().object_id);
       }
     } else return;
 
@@ -854,7 +854,7 @@
     var someDate = new Date();
     var numberOfDaysToAdd = 9;
     someDate.setDate(someDate.getDate() + numberOfDaysToAdd);
-    let m = someDate.getMonth() < 10 ? '0' + someDate.getMonth() : '' + someDate.getMonth();
+    let m = someDate.getMonth() < 10 ? "0" + someDate.getMonth() : "" + someDate.getMonth();
     someDate = "28/" + m + "/" + someDate.getFullYear();
     shareRequest.sendRequest(objectName, someDate, rolesToShareWith, subject, actionLink, function (response, loginLoaded) {
       function complete() {

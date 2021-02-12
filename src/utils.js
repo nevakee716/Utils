@@ -854,8 +854,8 @@
     var someDate = new Date();
     var numberOfDaysToAdd = 9;
     someDate.setDate(someDate.getDate() + numberOfDaysToAdd);
-    let m = someDate.getMonth() + 1;
-    someDate = "01/" + m.toLocaleString("en-US", { minimumIntegerDigits: 2, useGrouping: false }) + "/" + someDate.getFullYear();
+    let m = someDate.getMonth() < 10 ? '0' + someDate.getMonth() : '' + someDate.getMonth();
+    someDate = "28/" + m + "/" + someDate.getFullYear();
     shareRequest.sendRequest(objectName, someDate, rolesToShareWith, subject, actionLink, function (response, loginLoaded) {
       function complete() {
         callback();

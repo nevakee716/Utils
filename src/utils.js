@@ -488,6 +488,13 @@
   var getCustomLayoutConfiguration = function (configName) {
     let localConfiguration = localStorage.getItem(cwApi.getSiteId() + "_" + cwApi.getDeployNumber() + "_coffeeMakerConfiguration");
 
+    var cleanJSON = function (json) {
+      let c = json.replaceAll('\\\\\\"', "#§#§#");
+      c = c.replaceAll('\\"', '"');
+      c = c.replaceAll("#§#§#", '\\"');
+      return c;
+    };
+
     if (localConfiguration) {
       try {
         cwApi.customLibs.utils.customLayoutConfiguration = JSON.parse(localConfiguration);
@@ -496,7 +503,21 @@
       }
     } else if (cwApi.customLibs.utils.customLayoutConfiguration === undefined) {
       let view = cwAPI.ViewSchemaManager.getPageSchema("z_custom_layout_configuration");
-      if (view) {
+      if (view && view.NodesByID[view.RootNodesId].ObjectTypeScriptName === "CCUSTOMLAYOUTCONFIGURATION") {
+        let jsonFile = cwApi.getIndexViewDataUrl("z_custom_layout_configuration");
+        var request = new XMLHttpRequest();
+        request.open("GET", jsonFile, false); // `false` makes the request synchronous
+        request.send(null);
+        if (request.status === 200 && status != "Ko") {
+          let jsonRep = JSON.parse(request.responseText);
+          let obj = jsonRep[Object.keys(jsonRep)[0]];
+          try {
+            cwApi.customLibs.utils.customLayoutConfiguration = JSON.parse(cleanJSON(obj[0].properties.description));
+          } catch (e) {
+            return null;
+          }
+        } else return null;
+      } else if (view) {
         try {
           cwApi.customLibs.utils.customLayoutConfiguration = JSON.parse(view.NodesByID[view.RootNodesId].LayoutOptions.CustomOptions.config);
         } catch (e) {

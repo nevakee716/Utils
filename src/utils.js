@@ -873,10 +873,10 @@
   var shareWorkflow = function (objectName, objectId, objectTypeScriptName, message, rolesToShareWith, subject, actionLink, callback) {
     let shareRequest = new cwApi.workflow.dataClasses.shareRequest.CwShareRequest(objectId, objectTypeScriptName, message);
     var someDate = new Date();
-    var numberOfDaysToAdd = 9;
-    someDate.setDate(someDate.getDate() + numberOfDaysToAdd);
-    let m = someDate.getMonth() < 10 ? "0" + someDate.getMonth() : "" + someDate.getMonth();
-    someDate = "28/" + m + "/" + someDate.getFullYear();
+    let m = someDate.getMonth() + 1;
+    m = m < 10 ? "0" + m : "" + m;
+    let d = someDate.getDate() < 10 ? "0" + someDate.getDate() : "" + someDate.getDate();
+    someDate = d + "/" + m + "/" + someDate.getFullYear();
     shareRequest.sendRequest(objectName, someDate, rolesToShareWith, subject, actionLink, function (response, loginLoaded) {
       function complete() {
         callback();

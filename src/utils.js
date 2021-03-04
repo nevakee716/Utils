@@ -527,6 +527,7 @@
         return null;
       }
     }
+
     if (configName === undefined) return cwApi.customLibs.utils.customLayoutConfiguration;
     else return cwApi.customLibs.utils.customLayoutConfiguration[configName];
   };
@@ -917,6 +918,9 @@
 
   if (cwAPI.customLibs.utils === undefined) {
     cwAPI.customLibs.utils = {};
+  }
+  if (cwAPI.customLibs.utils.glossary === undefined) {
+    cwAPI.customLibs.utils.glossary = {};
   }
   cwAPI.customLibs.utils.version = 2.5;
   cwAPI.customLibs.utils.layoutsByNodeId = {};

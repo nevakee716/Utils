@@ -658,8 +658,9 @@
     }
   };
 
-  var cwFilter = function () {
+  var cwFilter = function (objectTypeScriptName) {
     this.filters = [];
+    this.objectTypeScriptName = objectTypeScriptName;
   };
 
   cwFilter.prototype.initWithString = function (configString) {
@@ -696,7 +697,7 @@
     // contributor
     if (filter.Asset === "contrib") {
       return !cwApi.cwUser.isCurrentUserSocial();
-    } else if (item.associations.hasOwnProperty(filter.Asset)) {
+    } else if (item.associations && item.associations.hasOwnProperty(filter.Asset)) {
       //associations
       objPropertyValue = item.associations[filter.Asset].length;
       value = filter.Value;
@@ -708,7 +709,7 @@
       objPropertyValue = iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset];
       let propertyType = iAsso
         ? cwApi.mm.getProperty(item.iObjectTypeScriptName, filter.Asset)
-        : cwApi.mm.getProperty(item.objectTypeScriptName, filter.Asset);
+        : cwApi.mm.getProperty(item.objectTypeScriptName ? item.objectTypeScriptName : this.objectTypeScriptName, filter.Asset);
 
       value = filter.Value;
       if (filter.Asset === "id") {

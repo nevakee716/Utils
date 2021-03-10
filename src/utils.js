@@ -804,7 +804,11 @@
     );
   };
 
-  var manageObjectFavoriteStatus = function (objectTypeScriptName, object_id, element) {
+  var manageObjectFavoriteStatus = function (objectTypeScriptName, object_id, element, evt) {
+    if (evt) {
+      evt.preventDefault();
+      evt.stopImmediatePropagation();
+    }
     if (isObjectFavorite(objectTypeScriptName, object_id)) {
       removeObjectAsFavorite(objectTypeScriptName, object_id, function () {
         if (element) element.className = element.className.replace("fa-heart", "fa-heart-o");
@@ -858,9 +862,6 @@
   };
 
   var removeObjectAsFavorite = function (objectTypeScriptName, object_id, callback) {
-    if (element) {
-      element.firstElementChild.className = element.firstElementChild.className.replace("fa-heart", "fa-heart-o");
-    }
     let favList = cwAPI.CwBookmarkManager.getFavouriteList();
     return (
       favList[objectTypeScriptName] &&

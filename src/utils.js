@@ -804,6 +804,18 @@
     );
   };
 
+  var manageObjectFavoriteStatus = function (objectTypeScriptName, object_id, element) {
+    if (isObjectFavorite(objectTypeScriptName, object_id)) {
+      removeObjectAsFavorite(objectTypeScriptName, object_id, function () {
+        if (element) element.className = element.className.replace("fa-heart", "fa-heart-o");
+      });
+    } else {
+      addObjectAsFavorite(objectTypeScriptName, object_id, function () {
+        if (element) element.className = element.className.replace("fa-heart-o", "fa-heart");
+      });
+    }
+  };
+
   var addObjectAsFavorite = function (objectTypeScriptName, object_id, callback) {
     cwApi.CwPendingEventsManager.setEvent("FavouriteBtnClick");
     var sendData = {
@@ -846,6 +858,9 @@
   };
 
   var removeObjectAsFavorite = function (objectTypeScriptName, object_id, callback) {
+    if (element) {
+      element.firstElementChild.className = element.firstElementChild.className.replace("fa-heart", "fa-heart-o");
+    }
     let favList = cwAPI.CwBookmarkManager.getFavouriteList();
     return (
       favList[objectTypeScriptName] &&
@@ -952,5 +967,7 @@
   cwAPI.customLibs.utils.isObjectFavorite = isObjectFavorite;
   cwAPI.customLibs.utils.addObjectAsFavorite = addObjectAsFavorite;
   cwAPI.customLibs.utils.removeObjectAsFavorite = removeObjectAsFavorite;
+  cwAPI.customLibs.utils.manageObjectFavoriteStatus = manageObjectFavoriteStatus;
+
   cwAPI.customLibs.utils.shareWorkflow = shareWorkflow;
 })(cwAPI, jQuery);

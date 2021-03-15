@@ -224,7 +224,7 @@
     return item.name;
   };
 
-  var getCustomDisplayString = function (cds, item, nodeID, hasTooltip) {
+  var getCustomDisplayString = function (cds, item, nodeID, hasTooltip, fullURL) {
     if (cds.indexOf("ngDirectives") !== -1) return null;
     var itemDisplayName, titleOnMouseOver, link, itemLabel, markedForDeletion, linkTag, linkEndTag;
     var popOutEnableByDefault = true,
@@ -238,6 +238,7 @@
     var p = new cwApi.CwDisplayProperties(cds, false);
     itemLabel = p.getDisplayString(item);
     link = cwApi.getSingleViewHash(item.objectTypeScriptName, item.object_id);
+    if (fullURL) link = window.location.origin + window.location.pathname + link;
     titleOnMouseOver =
       hasTooltip && !cwApi.isUndefined(item.properties.description)
         ? cwApi.cwEditProperties.cwEditPropertyMemo.isHTMLContent(item.properties.description)
@@ -362,7 +363,6 @@
     copy.canvas.width = trimWidth;
     copy.canvas.height = trimHeight;
     copy.putImageData(trimmed, 0, 0);
-
     // Return trimmed canvas
     return copy.canvas;
   };

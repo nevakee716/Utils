@@ -293,6 +293,19 @@
     }
   };
 
+  var getBlobFromCanva = function (canvas, callback) {
+    if (canvas.msToBlob) {
+      //for IE
+      var blob = canvas.msToBlob();
+      canvas.focus();
+      callback(blob);
+    } else {
+      canvas.toBlob(function (blob) {
+        callback(blob);
+      }, "image/png");
+    }
+  };
+
   var copyToImageClipboard = function copyToImageClipboard(blob) {
     function _defineProperty(obj, key, value) {
       if (key in obj) {
@@ -952,11 +965,13 @@
   cwAPI.customLibs.utils.copyToClipboard = copyToClipboard;
   cwAPI.customLibs.utils.copyToImageClipboard = copyToImageClipboard;
   cwAPI.customLibs.utils.copyCanvasToClipboard = copyCanvasToClipboard;
+  cwAPI.customLibs.utils.getBlobFromCanva = getBlobFromCanva;
 
   cwAPI.customLibs.utils.openDiagramPopoutWithID = cwApi.customFunction.openDiagramPopoutWithID;
 
   cwAPI.customLibs.utils.parseNode = parseNode;
   cwAPI.customLibs.utils.trimCanvas = trimCanvas;
+
   cwAPI.customLibs.utils.shapeToImage = shapeToImage;
   cwAPI.customLibs.utils.getPaletteShape = getPaletteShape;
   cwAPI.customLibs.utils.setLayoutToPercentHeight = setLayoutToPercentHeight;

@@ -227,23 +227,38 @@
   var getCustomDisplayStringWithOutHTML = function (cds, item) {
     var p = new cwApi.CwDisplayProperties(cds, false);
     let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
+    var defaultIcon = "fa fa-external-link";
     if (config) {
-      popOutEnableByDefault = config.displayPopoutByDefault;
       if (config.defaultIcon) defaultIcon = config.defaultIcon;
     }
+    let _item = JSON.parse(JSON.stringify(item));
 
-    itemLabel = p.getDisplayString(item);
-    return cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItemWithoutHTML(config, itemLabel, item);
+    Object.keys(_item.properties).forEach(function (p) {
+      let prop = cwApi.mm.getProperty(item.objectTypeScriptName, p);
+      if (prop && prop.type == "Lookup") {
+        prop.lookups.forEach(function (l) {
+          if (l.id.toString() === _item.properties[p]) {
+            _item.properties[p + "_id"] = l.id;
+            _item.properties[p + "_abbr"] = l.abbr;
+            _item.properties[p] = l.name;
+          }
+        });
+      }
+    });
+    Object.keys(_item.associations).forEach(function (a) {
+      if (_item.associations[a].items) _item.associations[a] = _item.associations[a].items;
+    });
+
+    let itemLabel = p.getDisplayString(_item);
+    return cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItemWithoutHTML(config, itemLabel, _item);
   };
 
   var getCustomDisplayString = function (cds, item, nodeID, hasTooltip, fullURL) {
     if (cds.indexOf("ngDirectives") !== -1) return null;
     var itemDisplayName, titleOnMouseOver, link, itemLabel, markedForDeletion, linkTag, linkEndTag;
-    var popOutEnableByDefault = true,
-      defaultIcon = "fa fa-external-link";
+    var defaultIcon = "fa fa-external-link";
     let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
     if (config) {
-      popOutEnableByDefault = config.displayPopoutByDefault;
       if (config.defaultIcon) defaultIcon = config.defaultIcon;
     }
     // use the display property scriptname
@@ -989,7 +1004,7 @@
   cwAPI.customLibs.utils.setLayoutToPercentHeight = setLayoutToPercentHeight;
   cwAPI.customLibs.utils.getCustomDisplayString = getCustomDisplayString;
   cwAPI.customLibs.utils.getCustomDisplayStringWithOutHTML = getCustomDisplayStringWithOutHTML;
-  
+
   cwAPI.customLibs.utils.getCustomLayoutConfiguration = getCustomLayoutConfiguration;
   cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;
   cwAPI.customLibs.utils.cwFilter = cwFilter;

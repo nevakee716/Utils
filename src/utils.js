@@ -224,6 +224,18 @@
     return item.name;
   };
 
+  var getCustomDisplayStringWithOutHTML = function (cds, item) {
+    var p = new cwApi.CwDisplayProperties(cds, false);
+    let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
+    if (config) {
+      popOutEnableByDefault = config.displayPopoutByDefault;
+      if (config.defaultIcon) defaultIcon = config.defaultIcon;
+    }
+
+    itemLabel = p.getDisplayString(item);
+    return cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItemWithoutHTML(config, itemLabel, item);
+  };
+
   var getCustomDisplayString = function (cds, item, nodeID, hasTooltip, fullURL) {
     if (cds.indexOf("ngDirectives") !== -1) return null;
     var itemDisplayName, titleOnMouseOver, link, itemLabel, markedForDeletion, linkTag, linkEndTag;
@@ -976,6 +988,8 @@
   cwAPI.customLibs.utils.getPaletteShape = getPaletteShape;
   cwAPI.customLibs.utils.setLayoutToPercentHeight = setLayoutToPercentHeight;
   cwAPI.customLibs.utils.getCustomDisplayString = getCustomDisplayString;
+  cwAPI.customLibs.utils.getCustomDisplayStringWithOutHTML = getCustomDisplayStringWithOutHTML;
+  
   cwAPI.customLibs.utils.getCustomLayoutConfiguration = getCustomLayoutConfiguration;
   cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;
   cwAPI.customLibs.utils.cwFilter = cwFilter;

@@ -962,6 +962,7 @@
     let prop = cwApi.mm.getProperty(item.objectTypeScriptName, propertyTypeScriptName);
     let value = item.properties[propertyTypeScriptName];
     if (CLCconfig.hasOwnProperty(item.objectTypeScriptName) && CLCconfig[item.objectTypeScriptName].hasOwnProperty(propertyTypeScriptName)) {
+      CLCconfig = CLCconfig[item.objectTypeScriptName][propertyTypeScriptName];
       if (prop.type === "Lookup") {
         CLCconfig = CLCconfig[item.objectTypeScriptName][propertyTypeScriptName];
         if (CLCconfig.hasOwnProperty(item.properties[propertyTypeScriptName + "_id"])) {
@@ -972,15 +973,15 @@
         let selectedStep;
         CLCconfig.steps.forEach(function (step) {
           if (
-            (step.min && step.max === null && step.min < value) ||
-            (step.min && step.max && step.min < value && step.max > value) ||
-            (step.max && step.min === null && step.max > value) ||
-            ([undefined, null, ""].indexOf(step.min) !== -1 && [undefined, null, ""].indexOf(step.max) !== -1)
+            ([undefined, null, ""].indexOf(step.min) !== -1 && [undefined, null, ""].indexOf(step.max) !== -1) ||
+            ([undefined, null, ""].indexOf(step.max) !== -1 && step.min < value) ||
+            ([undefined, null, ""].indexOf(step.min) !== -1 && step.max > value) ||
+            (step.min < value && step.max > value)
           ) {
             selectedStep = step;
           }
         });
-        CLCconfig = step;
+        CLCconfig = selectedStep;
       }
     } else {
       let i = -1;
@@ -1001,31 +1002,26 @@
     return rColor;
   };
 
+  function get_style_rule_value(selector, style) {
+    var selector_compare = selector.toLowerCase();
+    var selector_compare2 = selector_compare.substr(0, 1) === "." ? selector_compare.substr(1) : "." + selector_compare;
 
-  function get_style_rule_value(selector, style)
-{
- var selector_compare=selector.toLowerCase();
- var selector_compare2= selector_compare.substr(0,1)==='.' ?  selector_compare.substr(1) : '.'+selector_compare;
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var mysheet = document.styleSheets[i];
+      var myrules = mysheet.cssRules ? mysheet.cssRules : mysheet.rules;
 
- for (var i = 0; i < document.styleSheets.length; i++)
- {
-  var mysheet = document.styleSheets[i];
-  var myrules = mysheet.cssRules ? mysheet.cssRules : mysheet.rules;
-
-  for (var j = 0; j < myrules.length; j++)
-  {
-    if (myrules[j].selectorText)
-    {
-     var check = myrules[j].selectorText.toLowerCase();
-     switch (check)
-     {
-      case selector_compare  :
-      case selector_compare2 : return myrules[j].style[style];
-     }
+      for (var j = 0; j < myrules.length; j++) {
+        if (myrules[j].selectorText) {
+          var check = myrules[j].selectorText.toLowerCase();
+          switch (check) {
+            case selector_compare:
+            case selector_compare2:
+              return myrules[j].style[style];
+          }
+        }
+      }
     }
-   }
   }
- }
 
   /********************************************************************************
     Configs : add trigger for single page
@@ -1076,8 +1072,7 @@
   cwAPI.customLibs.utils.getCustomDisplayString = getCustomDisplayString;
   cwAPI.customLibs.utils.getCustomDisplayStringWithOutHTML = getCustomDisplayStringWithOutHTML;
   cwAPI.customLibs.utils.getColorFromItemValue = getColorFromItemValue;
-  cwAPI.customLibs.utils.getCssStyle =get_style_rule_value;
-  
+  cwAPI.customLibs.utils.getCssStyle = get_style_rule_value;
 
   cwAPI.customLibs.utils.getCustomLayoutConfiguration = getCustomLayoutConfiguration;
   cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;

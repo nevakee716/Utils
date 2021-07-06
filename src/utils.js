@@ -964,7 +964,6 @@
     if (CLCconfig.hasOwnProperty(item.objectTypeScriptName) && CLCconfig[item.objectTypeScriptName].hasOwnProperty(propertyTypeScriptName)) {
       CLCconfig = CLCconfig[item.objectTypeScriptName][propertyTypeScriptName];
       if (prop.type === "Lookup") {
-        CLCconfig = CLCconfig[item.objectTypeScriptName][propertyTypeScriptName];
         if (CLCconfig.hasOwnProperty(item.properties[propertyTypeScriptName + "_id"])) {
           CLCconfig = CLCconfig[item.properties[propertyTypeScriptName + "_id"]];
         }

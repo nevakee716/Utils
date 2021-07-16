@@ -1022,6 +1022,31 @@
     }
   }
 
+  var sort2Array = function (arrayToSort, arrayToMimicSort, reverse) {
+    //1) combine the arrays:
+    var list = [];
+    for (var j = 0; j < arrayToSort.length; j++) {
+      let r = arrayToMimicSort.map(function (a) {
+        return a[j];
+      });
+      list.push({ sortProp: arrayToSort[j], r });
+    }
+
+    //2) sort:
+    list.sort(function (a, b) {
+      if (reverse) return b.sortProp < a.sortProp ? -1 : b.sortProp == a.sortProp ? 0 : 1;
+      return a.sortProp < b.sortProp ? -1 : a.sortProp == b.sortProp ? 0 : 1;
+    });
+
+    //3) separate them back out:
+    for (var k = 0; k < list.length; k++) {
+      arrayToSort[k] = list[k].sortProp;
+      arrayToMimicSort.forEach(function (a, i) {
+        a[k] = list[k].r[i];
+      });
+    }
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -1081,6 +1106,8 @@
   cwAPI.customLibs.utils.addObjectAsFavorite = addObjectAsFavorite;
   cwAPI.customLibs.utils.removeObjectAsFavorite = removeObjectAsFavorite;
   cwAPI.customLibs.utils.manageObjectFavoriteStatus = manageObjectFavoriteStatus;
+
+  cwAPI.customLibs.utils.sort2Array = sort2Array;
 
   cwAPI.customLibs.utils.shareWorkflow = shareWorkflow;
 })(cwAPI, jQuery);

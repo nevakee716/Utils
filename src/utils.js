@@ -1029,7 +1029,7 @@
       let r = arrayToMimicSort.map(function (a) {
         return a[j];
       });
-      list.push({ sortProp: arrayToSort[j], r });
+      list.push({ sortProp: arrayToSort[j], r: r });
     }
 
     //2) sort:

@@ -1047,6 +1047,17 @@
     }
   };
 
+  if (cwAPI.customFunction === undefined) cwAPI.customFunction = {};
+  cwApi.customFunction.openDiagramPopoutWithID = function (id, popOutName, evt) {
+    var obj = {};
+    if (evt) {
+      evt.preventDefault();
+      evt.stopImmediatePropagation();
+    }
+    obj.object_id = id;
+    cwAPI.cwDiagramPopoutHelper.openDiagramPopout(obj, popOutName);
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/

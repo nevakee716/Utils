@@ -176,7 +176,10 @@
         for (let i = 0; i < parent[associationNode].length; i += 1) {
           let child = parent[associationNode][i];
           if (contextualNode && mainID === child.object_id) context = true; // the main object is present inside the node; so we keep the parent node
-          if (contextualNode === false && manageContextualNodes(child.associations, config, mainID) === false) {
+          if (
+            contextualNode === false &&
+            manageContextualNodes(child.associations, config, associationNode == mainID ? child.object_id : mainID) === false
+          ) {
             objectToRemove.push(i);
           }
         }

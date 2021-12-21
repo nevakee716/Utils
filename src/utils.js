@@ -1061,6 +1061,135 @@
     cwAPI.cwDiagramPopoutHelper.openDiagramPopout(obj, popOutName);
   };
 
+  cwAPI.customLibs.doActionForSingle.wordButton = function (mainObject) {
+    let wordButtons = document.querySelectorAll(".wordDynamictemplate");
+    loadWordTemplaterJs();
+    wordButtons.forEach(function (wordButton) {
+      let url = wordButton.getAttribute("url");
+      addWordEvent(wordButton, mainObject, url);
+    });
+  };
+
+  var loadWordTemplaterJs = function () {
+    if (cwAPI.isDebugMode() === false) {
+      function loadjscssfile(filename) {
+        var fileref = document.createElement("script");
+        fileref.setAttribute("type", "text/javascript");
+        fileref.setAttribute("src", filename);
+        if (typeof fileref != "undefined") document.getElementsByTagName("head")[0].appendChild(fileref);
+      }
+      loadjscssfile("/evolve/Common/modules/docxTemplater/docxTemplater.concat.js?" + cwApi.getDeployNumber());
+    }
+  };
+
+  var addWordEvent = function (wordButton, mainObject, url) {
+    wordButton.addEventListener("click", function () {
+      cwDocxTemplate.exportWord(mainObject, url + "?" + cwAPI.getRandomNumber(), null, {
+        property: function (item, propertyScriptName) {
+          let value = cwApi.cwPropertiesGroups.getDisplayValue(
+            item.objectTypeScriptName,
+            propertyScriptName,
+            item.properties[propertyScriptName],
+            item,
+            "properties",
+            false,
+            true
+          );
+          value = cwPropertiesGroups.getSpecialPropertyValue(property.scriptName, value);
+          return value;
+        },
+        getLink: function (item) {
+          return { url: cwAPI.getSingleViewHash(cwAPI.replaceSpecialCharacters(item.objectTypeScriptName), item.name), label: item.name };
+        },
+        customDisplayString: function (item, cds) {
+          let r = cwAPI.customLibs.utils.getCustomDisplayString(cds + "<##>", item, "", false, true);
+          return '<meta charset="UTF-8"><body>' + r.replace('<a class="obj" >', "").replace("</a></a>", "</a>") + "</body>";
+        },
+        getAutomaticDiagram: function (lID, item, width) {
+          return new Promise(function (resolve, reject) {
+            var diagramViewer = cwAPI.customLibs.diagramViewerByNodeIDAndID[lID + "_" + item.object_id];
+            diagramViewer.getImageFromCanvas(null, 5, null, true, function (diagramImage) {
+              setTimeout(function () {
+                diagramImage.canvas.toBlob(function (blob) {
+                  diagramImage.remove();
+                  blobToBase64(blob, function (base64) {
+                    resolve({
+                      width: width,
+                      height: (width * diagramViewer.camera.diagramSize.h) / diagramViewer.camera.diagramSize.w,
+                      data: base64,
+                      extension: ".png",
+                    });
+                  });
+                }, "image/png");
+              }, 500);
+            });
+          });
+        },
+        getNetwork: function (nodeID, width, height) {
+          let canva = document.querySelector("#cwLayoutNetwork" + nodeID + " canvas");
+          var networkUI;
+          cwAPI.appliedLayouts.some(function (l) {
+            if (l.nodeID === nodeID) {
+              networkUI = l.networkUI;
+              return true;
+            }
+          });
+
+          networkUI.fit();
+          var container = document.getElementById("cwLayoutNetworkCanva" + nodeID);
+          var oldheight = container.offsetHeight;
+          var scale = networkUI.getScale(); // change size of the canva to have element in good resolution
+
+          let newWidth = container.offsetWidth / scale;
+          let newHeight = (container.offsetWidth * height) / (scale * width);
+
+          container.style.width = newWidth.toString() + "px";
+          container.style.height = newHeight.toString() + "px";
+          networkUI.background = true;
+          networkUI.redraw();
+
+          return new Promise(function (resolve, reject) {
+            cwApi.customLibs.utils.getBlobFromCanva(canva, function (blob) {
+              blobToBase64(blob, function (base64) {
+                resolve({
+                  width: width,
+                  height: height,
+                  data: base64,
+                  extension: ".png",
+                });
+                container.style.height = oldheight + "px";
+                container.style.width = "";
+                networkUI.background = false;
+                networkUI.redraw();
+                networkUI.fit();
+              });
+            });
+          });
+        },
+        getDiagram: function (diagram, width) {
+          return new Promise(function (resolve, reject) {
+            var diagramViewer = cwAPI.customLibs.diagramViewerByNodeIDAndID[diagram.nodeID + "_" + diagram.object_id];
+            diagramViewer.getImageFromCanvas(null, 5, null, true, function (diagramImage) {
+              setTimeout(function () {
+                diagramImage.canvas.toBlob(function (blob) {
+                  diagramImage.remove();
+                  blobToBase64(blob, function (base64) {
+                    resolve({
+                      width: width,
+                      height: (width * diagramViewer.camera.diagramSize.h) / diagramViewer.camera.diagramSize.w,
+                      data: base64,
+                      extension: ".png",
+                    });
+                  });
+                }, "image/png");
+              }, 500);
+            });
+          });
+        },
+      });
+    });
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -1124,4 +1253,6 @@
   cwAPI.customLibs.utils.sort2Array = sort2Array;
 
   cwAPI.customLibs.utils.shareWorkflow = shareWorkflow;
+  cwAPI.customLibs.utils.addWordEvent = addWordEvent;
+  cwAPI.customLibs.utils.loadWordTemplaterJs = loadWordTemplaterJs;
 })(cwAPI, jQuery);

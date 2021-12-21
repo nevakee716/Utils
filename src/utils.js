@@ -1070,6 +1070,16 @@
     });
   };
 
+  var blobToBase64 = function (blob, callback) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var dataUrl = reader.result;
+      var base64 = dataUrl.split(",")[1];
+      callback(base64);
+    };
+    reader.readAsDataURL(blob);
+  };
+
   var loadWordTemplaterJs = function () {
     if (cwAPI.isDebugMode() === false) {
       function loadjscssfile(filename) {
@@ -1095,7 +1105,7 @@
             false,
             true
           );
-          value = cwPropertiesGroups.getSpecialPropertyValue(property.scriptName, value);
+          value = cwApi.cwPropertiesGroups.getSpecialPropertyValue(property.scriptName, value);
           return value;
         },
         getLink: function (item) {

@@ -1070,16 +1070,6 @@
     });
   };
 
-  var blobToBase64 = function (blob, callback) {
-    var reader = new FileReader();
-    reader.onload = function () {
-      var dataUrl = reader.result;
-      var base64 = dataUrl.split(",")[1];
-      callback(base64);
-    };
-    reader.readAsDataURL(blob);
-  };
-
   var loadWordTemplaterJs = function () {
     if (cwAPI.isDebugMode() === false) {
       function loadjscssfile(filename) {
@@ -1090,6 +1080,16 @@
       }
       loadjscssfile("/evolve/Common/modules/docxTemplater/docxTemplater.concat.js?" + cwApi.getDeployNumber());
     }
+  };
+
+  var blobToBase64 = function (blob, callback) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var dataUrl = reader.result;
+      var base64 = dataUrl.split(",")[1];
+      callback(base64);
+    };
+    reader.readAsDataURL(blob);
   };
 
   var addWordEvent = function (wordButton, mainObject, url) {
@@ -1105,7 +1105,7 @@
             false,
             true
           );
-          value = cwApi.cwPropertiesGroups.getSpecialPropertyValue(property.scriptName, value);
+          value = cwApi.cwPropertiesGroups.getSpecialPropertyValue(propertyScriptName, value);
           return value;
         },
         getLink: function (item) {

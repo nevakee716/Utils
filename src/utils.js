@@ -253,7 +253,8 @@
     });
 
     let itemLabel = p.getDisplayString(_item);
-    return cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItemWithoutHTML(config, itemLabel, _item);
+    itemLabel = cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItemWithoutHTML(config, itemLabel, _item);
+    return itemLabel.replace(/<[^>]*>?/gm, "");
   };
 
   var getCustomDisplayString = function (cds, item, nodeID, hasTooltip, fullURL) {

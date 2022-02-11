@@ -932,34 +932,6 @@
     );
   };
 
-  var shareWorkflow = function (objectName, objectId, objectTypeScriptName, message, rolesToShareWith, subject, actionLink, callback) {
-    let shareRequest = new cwApi.workflow.dataClasses.shareRequest.CwShareRequest(objectId, objectTypeScriptName, message);
-    var someDate = new Date();
-    let m = someDate.getMonth() + 1;
-    m = m < 10 ? "0" + m : "" + m;
-    let d = someDate.getDate() < 10 ? "0" + someDate.getDate() : "" + someDate.getDate();
-    someDate = d + "/" + m + "/" + someDate.getFullYear();
-    shareRequest.sendRequest(objectName, someDate, rolesToShareWith, subject, actionLink, function (response, loginLoaded) {
-      function complete() {
-        callback();
-      }
-
-      if (cwApi.statusIsKo(response)) {
-        if (!loginLoaded) {
-          if (response.code === cwAPI.cwConfigs.ErrorCodes.NoRecipientsWorkflow) {
-            cwApi.notificationManager.addNotification($.i18n.prop("workflow_thereAreNoValidRecipientsForThisRequest"), "error");
-          } else {
-            cwApi.notificationManager.addNotification($.i18n.prop("workflow_somethingWentWrongWhileSharingThisPage"), "error");
-            complete();
-          }
-        }
-      } else {
-        cwApi.notificationManager.addNotification($.i18n.prop("workflow_thisPageHasBeenSharedWithUsersInTheSelectedRoles"));
-        complete();
-      }
-    });
-  };
-
   var getColorFromItemValue = function (item, propertyTypeScriptName) {
     let rColor = "#AAA";
     let CLCconfig = cwApi.customLibs.utils.getCustomLayoutConfiguration("property");
@@ -1201,6 +1173,117 @@
     });
   };
 
+  var shareWorkflow = function (objectName, objectId, objectTypeScriptName, message, rolesToShareWith, subject, actionLink, callback) {
+    let shareRequest = new cwApi.workflow.dataClasses.shareRequest.CwShareRequest(objectId, objectTypeScriptName, message);
+    var someDate = new Date();
+    let m = someDate.getMonth() + 1;
+    m = m < 10 ? "0" + m : "" + m;
+    let d = someDate.getDate() < 10 ? "0" + someDate.getDate() : "" + someDate.getDate();
+    someDate = d + "/" + m + "/" + someDate.getFullYear();
+    shareRequest.sendRequest(objectName, someDate, rolesToShareWith, subject, actionLink, function (response, loginLoaded) {
+      function complete() {
+        callback();
+      }
+
+      if (cwApi.statusIsKo(response)) {
+        if (!loginLoaded) {
+          if (response.code === cwAPI.cwConfigs.ErrorCodes.NoRecipientsWorkflow) {
+            cwApi.notificationManager.addNotification($.i18n.prop("workflow_thereAreNoValidRecipientsForThisRequest"), "error");
+          } else {
+            cwApi.notificationManager.addNotification($.i18n.prop("workflow_somethingWentWrongWhileSharingThisPage"), "error");
+            complete();
+          }
+        }
+      } else {
+        cwApi.notificationManager.addNotification($.i18n.prop("workflow_thisPageHasBeenSharedWithUsersInTheSelectedRoles"));
+        complete();
+      }
+    });
+  };
+
+  var sendRequestToCwFileHandling = function (request, parameters, callback) {
+    var xmlhttp = new XMLHttpRequest();
+    var self = this;
+    //replace second argument with the path to your Secret Server webservices
+    xmlhttp.open("POST", window.location.origin + "/evolve/CWFileHandling/CwFileHandling.asmx", true);
+
+    //create the SOAP request
+    //replace username, password (and org + domain, if necessary) with the appropriate info
+    var strRequest =
+      '<?xml version="1.0" encoding="utf-8"?>' +
+      '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">' +
+      "<soap12:Body>" +
+      "<" +
+      request +
+      ' xmlns="http://HawkeyeQ.org/">';
+    parameters.forEach(function (p) {
+      var v = p.value;
+      if (v && v.indexOf) {
+        v = v.replaceAll(/&/, "&amp;");
+        v = v.replaceAll(/</, "&lt;");
+        v = v.replaceAll(/>/, "&gt;");
+      }
+      strRequest += "<" + p.key + ">" + v + "</" + p.key + ">";
+    });
+
+    strRequest += "</" + request + ">" + "</soap12:Body>" + "</soap12:Envelope>";
+
+    //specify request headers
+    xmlhttp.setRequestHeader("Content-Type", "application/soap+xml; charset=utf-8");
+
+    xmlhttp.onreadystatechange = function () {
+      if (xmlhttp.readyState == 4) {
+        cwAPI.siteLoadingPageFinish();
+        callback(xmlhttp.responseText);
+      }
+    };
+
+    cwAPI.siteLoadingPageStart();
+    //clean the SOAP request
+
+    //send the SOAP request
+    xmlhttp.send(strRequest);
+  };
+
+  var associateUserToCwWorkflowRole = function (cwUserIDs, cwRoleId, callback) {
+    let jsonObject = {
+      objectTypeScriptname: "cw_role",
+      object_id: cwRoleId,
+      iProperties: {},
+      properties: {
+        name: "WorkFlow Role",
+      },
+      associations: {
+        cw_roletocw_role_to_cw_usertocw_user: cwUserIDs.map(function (cwUserID) {
+          return {
+            object_id: cwUserID,
+          };
+        }),
+      },
+    };
+    cwAPI.customLibs.utils.sendRequestToCwFileHandling(
+      "CwCreateUpdateObjectConnId",
+      [
+        { key: "Connection", value: "" },
+        { key: "Username", value: cwAPI.cwUser.getCurrentUserItem().name },
+        { key: "Password", value: "" },
+        { key: "ConnectionId", value: $.connection.cwEvolveDiagramEditorHub.connection.id },
+        { key: "ModelScriptName", value: cwApi.cwConfigs.ModelFilename },
+        { key: "ObjectJsonStr", value: angular.toJson(jsonObject) },
+      ],
+      function (response) {
+        let id = response.replace("\r\n", "").match(/<ObjectId>(.*)<\/ObjectId>/)[1];
+        if (id == "0") {
+          cwAPI.notificationManager.addError(
+            "An error occur during the assignement of the roles : \n" + response.replace("\r\n", "").match(/<Message>(.*)<\/Message>/)[1]
+          );
+          return;
+        }
+        callback();
+      }
+    );
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -1262,8 +1345,10 @@
   cwAPI.customLibs.utils.manageObjectFavoriteStatus = manageObjectFavoriteStatus;
 
   cwAPI.customLibs.utils.sort2Array = sort2Array;
-
-  cwAPI.customLibs.utils.shareWorkflow = shareWorkflow;
   cwAPI.customLibs.utils.addWordEvent = addWordEvent;
   cwAPI.customLibs.utils.loadWordTemplaterJs = loadWordTemplaterJs;
+
+  cwAPI.customLibs.utils.shareWorkflow = shareWorkflow;
+  cwAPI.customLibs.utils.sendRequestToCwFileHandling = sendRequestToCwFileHandling;
+  cwAPI.customLibs.utils.associateUserToCwWorkflowRole = associateUserToCwWorkflowRole;
 })(cwAPI, jQuery);

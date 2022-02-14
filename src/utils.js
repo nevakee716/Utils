@@ -785,8 +785,10 @@
       } else {
         objPropertyValue = iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset];
       }
-      value = value.replace("@currentCwUserName", cwAPI.cwUser.getCurrentUserItem().name);
-      value = value.replace("@currentCwUserId", cwAPI.cwUser.getCurrentUserItem().object_id);
+      if (value.replace) {
+        value = value.replace("@currentCwUserName", cwAPI.cwUser.getCurrentUserItem().name);
+        value = value.replace("@currentCwUserId", cwAPI.cwUser.getCurrentUserItem().object_id);
+      }
     } else return;
 
     switch (filter.Operator) {

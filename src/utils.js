@@ -1286,6 +1286,45 @@
     );
   };
 
+  var sendIndexContext = function (displayId, contextIds) {
+    var config = cwAPI.getCurrentView() ? cwAPI.appliedLayouts[0].config : cwAPI.customLibs.utils.getCustomLayoutConfiguration("homePage");
+    return config.columns.some(function (col) {
+      return col.displays.some(function (display) {
+        if (display.uuid.toString() === displayId && display.giveIndexContext) {
+          var newEvent = document.createEvent("Event");
+          newEvent.data = contextIds;
+          newEvent.initEvent("indexContext from " + displayId, true, true);
+          document.querySelector(".homePage_main").dispatchEvent(newEvent);
+          return true;
+        }
+      });
+    });
+  };
+
+  var sendSingleContext = function (displayId, scriptname, id, label) {
+    var config = cwAPI.getCurrentView() ? cwAPI.appliedLayouts[0].config : cwAPI.customLibs.utils.getCustomLayoutConfiguration("homePage");
+    return config.columns.some(function (col) {
+      return col.displays.some(function (display) {
+        if (display.uuid.toString() === displayId && display.giveSingleContext) {
+          var newEvent = document.createEvent("Event");
+          newEvent.id = id;
+          newEvent.scriptname = scriptname;
+          newEvent.label = label;
+          newEvent.initEvent("singleContext from " + displayId, true, true);
+          document.querySelector(".homePage_main").dispatchEvent(newEvent);
+          return true;
+        }
+      });
+    });
+  };
+
+  var clickSingleContext = function (event, scriptname, id, label) {
+    var homeDisplay = event.target.closest(".homePage_display");
+    if (!homeDisplay || !sendSingleContext(homeDisplay.id, scriptname, id, label)) {
+      window.location.hash = cwApi.getSingleViewHash(cwApi.replaceSpecialCharacters(scriptname), id);
+    }
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -1353,4 +1392,7 @@
   cwAPI.customLibs.utils.shareWorkflow = shareWorkflow;
   cwAPI.customLibs.utils.sendRequestToCwFileHandling = sendRequestToCwFileHandling;
   cwAPI.customLibs.utils.associateUserToCwWorkflowRole = associateUserToCwWorkflowRole;
+
+  cwApi.customLibs.utils.sendIndexContext = sendIndexContext;
+  cwAPI.customLibs.utils.clickSingleContext = clickSingleContext;
 })(cwAPI, jQuery);

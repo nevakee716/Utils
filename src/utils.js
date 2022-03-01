@@ -276,20 +276,37 @@
           ? $(item.properties.description).text()
           : item.properties.description
         : "";
-
+    let isInDisplay = document.querySelector(".homePage_evolveView") ? true : false;
     markedForDeletion = cwApi.isObjectMarkedForDeletion(item) ? " markedForDeletion" : "";
-
-    linkTag = "<a class='" + nodeID + markedForDeletion + "' href='" + link + "'>";
-    linkEndTag = "</a>";
-    if (itemLabel.indexOf("<@") !== -1 && itemLabel.indexOf("\\<@") === -1) {
-      let info = itemLabel.split("<@")[1].split("@>")[0];
-      if (info.split("@")[0] === "contrib" && cwApi.cwUser.isCurrentUserSocial()) {
-        itemDisplayName = itemLabel.replace(/<@.*@>/g, "");
-      } else {
-        itemDisplayName = itemLabel.replace(/<@(contrib@)*/g, linkTag).replace(/@>/g, linkEndTag);
-      }
-    } else {
+    if (isInDisplay) {
+      linkTag =
+        '<a class="contextClick ' +
+        nodeID +
+        markedForDeletion +
+        '" onclick="cwAPI.customLibs.utils.clickSingleContext(event' +
+        ",'" +
+        item.objectTypeScriptName +
+        "'," +
+        item.object_id +
+        ",'" +
+        itemLabel.replace('"', '\\"').replace("'", "\\'") +
+        "'" +
+        ')" >';
+      linkEndTag = "</a>";
       itemDisplayName = linkTag + itemLabel + linkEndTag;
+    } else {
+      linkTag = "<a class='" + nodeID + markedForDeletion + "' href='" + link + "'>";
+      linkEndTag = "</a>";
+      if (itemLabel.indexOf("<@") !== -1 && itemLabel.indexOf("\\<@") === -1) {
+        let info = itemLabel.split("<@")[1].split("@>")[0];
+        if (info.split("@")[0] === "contrib" && cwApi.cwUser.isCurrentUserSocial()) {
+          itemDisplayName = itemLabel.replace(/<@.*@>/g, "");
+        } else {
+          itemDisplayName = itemLabel.replace(/<@(contrib@)*/g, linkTag).replace(/@>/g, linkEndTag);
+        }
+      } else {
+        itemDisplayName = linkTag + itemLabel + linkEndTag;
+      }
     }
     if (cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItem) {
       itemDisplayName = cwApi.cwLayouts.CwLayout.prototype.getEnhancedDisplayItem(config, itemDisplayName, item);

@@ -1447,5 +1447,6 @@
   cwAPI.customLibs.utils.associateUserToCwWorkflowRole = associateUserToCwWorkflowRole;
 
   cwApi.customLibs.utils.sendIndexContext = sendIndexContext;
+  cwAPI.customLibs.utils.sendSingleContext = sendSingleContext;
   cwAPI.customLibs.utils.clickSingleContext = clickSingleContext;
 })(cwAPI, jQuery);

@@ -49,6 +49,48 @@
     }
   };
 
+  var enablePrintButton = async function (rootNode, cwView) {
+    let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("misc");
+    if (config) {
+      if (config.hidePrintButton || config.betaPrintButton) {
+        while (!document.querySelector("#cw_print_btn")) {
+          await timeout(500);
+        }
+        if (config.hidePrintButton) {
+          $("#cw_print_btn").hide();
+        }
+        if (config.betaPrintButton) {
+          var currentView = cwAPI.getCurrentView();
+
+          $("#cw_print_btn").removeAttr("href");
+          $("#cw_print_btn").unbind("click");
+          if (cwAPI.isDebugMode() === false) {
+            function loadjscssfile(filename) {
+              var fileref = document.createElement("script");
+              fileref.setAttribute("type", "text/javascript");
+              fileref.setAttribute("src", filename);
+              if (typeof fileref != "undefined") document.getElementsByTagName("head")[0].appendChild(fileref);
+            }
+            loadjscssfile("/evolve/Common/modules/jspdf/jspdf.min.js?" + cwApi.getDeployNumber());
+          }
+
+          $("#cw_print_btn").click(async () => {
+            var name = currentView.name;
+            if (cwAPI.isSinglePageType()) {
+              let a = document.querySelector("#cw-top-bar .cw-bc:last-child span");
+              let OT = cwAPI.getObjectTypeName(cwAPI.getRootObjectTypeForCurrentView());
+              name = OT == name ? name : `${cwAPI.getObjectTypeName(cwAPI.getRootObjectTypeForCurrentView())} - ${name}`;
+              name = `${name} - ${a.innerHTML} - `;
+            }
+
+            let cwPdf = new cwApi.customLibs.utils.cwPdf(name);
+            cwPdf.getPdf();
+          });
+        }
+      }
+    }
+  };
+
   var parseNode = function (child, callback) {
     for (var associationNode in child) {
       if (child.hasOwnProperty(associationNode) && child[associationNode] !== null) {
@@ -1113,7 +1155,7 @@
         },
         getAutomaticDiagram: function (lID, item, width) {
           return new Promise(function (resolve, reject) {
-            var diagramViewer = cwAPI.customLibs.diagramViewerByNodeIDAndID[lID + "_" + item.object_id];
+            var diagramViewer = cwAPI.customLibs.diagramViewerByNodeIDAndID[lID + "-" + item.object_id];
             diagramViewer.getImageFromCanvas(null, 5, null, true, function (diagramImage) {
               setTimeout(function () {
                 diagramImage.canvas.toBlob(function (blob) {
@@ -1132,49 +1174,11 @@
           });
         },
         getNetwork: function (nodeID, width, height) {
-          let canva = document.querySelector("#cwLayoutNetwork" + nodeID + " canvas");
-          var networkUI;
-          cwAPI.appliedLayouts.some(function (l) {
-            if (l.nodeID === nodeID) {
-              networkUI = l.networkUI;
-              return true;
-            }
-          });
-
-          networkUI.fit();
-          var container = document.getElementById("cwLayoutNetworkCanva" + nodeID);
-          var oldheight = container.offsetHeight;
-          var scale = networkUI.getScale(); // change size of the canva to have element in good resolution
-
-          let newWidth = container.offsetWidth / scale;
-          let newHeight = (container.offsetWidth * height) / (scale * width);
-
-          container.style.width = newWidth.toString() + "px";
-          container.style.height = newHeight.toString() + "px";
-          networkUI.background = true;
-          networkUI.redraw();
-
-          return new Promise(function (resolve, reject) {
-            cwApi.customLibs.utils.getBlobFromCanva(canva, function (blob) {
-              blobToBase64(blob, function (base64) {
-                resolve({
-                  width: width,
-                  height: height,
-                  data: base64,
-                  extension: ".png",
-                });
-                container.style.height = oldheight + "px";
-                container.style.width = "";
-                networkUI.background = false;
-                networkUI.redraw();
-                networkUI.fit();
-              });
-            });
-          });
+          cwAPI.customLibs.utils.getImgFromNetwork(nodeID, width, height);
         },
         getDiagram: function (diagram, width) {
           return new Promise(function (resolve, reject) {
-            var diagramViewer = cwAPI.customLibs.diagramViewerByNodeIDAndID[diagram.nodeID + "_" + diagram.object_id];
+            var diagramViewer = cwAPI.customLibs.diagramViewerByNodeIDAndID[diagram.nodeID + "-" + diagram.object_id];
             diagramViewer.getImageFromCanvas(null, 5, null, true, function (diagramImage) {
               setTimeout(function () {
                 diagramImage.canvas.toBlob(function (blob) {
@@ -1192,6 +1196,70 @@
             });
           });
         },
+      });
+    });
+  };
+
+  var getImgFromNetwork = function (nodeID, width, height) {
+    width = width ?? 2;
+    height = height ?? 3;
+    let canva = document.querySelector("#cwLayoutNetwork" + nodeID + " canvas");
+    var networkUI;
+    cwAPI.appliedLayouts.some(function (l) {
+      if (l.nodeID === nodeID) {
+        networkUI = l.networkUI;
+        return true;
+      }
+    });
+
+    networkUI.fit();
+    var container = document.getElementById("cwLayoutNetworkCanva" + nodeID);
+    var oldheight = container.offsetHeight;
+    var scale = networkUI.getScale(); // change size of the canva to have element in good resolution
+
+    let newWidth = container.offsetWidth / scale;
+    let newHeight = (container.offsetWidth * 3) / (scale * 2);
+
+    container.style.width = newWidth.toString() + "px";
+    container.style.height = newHeight.toString() + "px";
+    networkUI.background = true;
+    networkUI.redraw();
+
+    return new Promise(function (resolve, reject) {
+      cwApi.customLibs.utils.getBlobFromCanva(canva, function (blob) {
+        blobToBase64(blob, function (base64) {
+          resolve({
+            width: width,
+            height: height,
+            data: base64,
+            extension: ".png",
+          });
+          container.style.height = oldheight + "px";
+          container.style.width = "";
+          networkUI.background = false;
+          networkUI.redraw();
+          networkUI.fit();
+        });
+      });
+    });
+  };
+
+  var getImgFromDiagram = function (id) {
+    return new Promise(async (resolve) => {
+      var diagramViewer = cwAPI.customLibs.diagramViewerByNodeIDAndID[id];
+      diagramViewer.getImageFromCanvas(null, 5, null, true, async function (diagramImage) {
+        await cwApi.customLibs.utils.timeout(500);
+        diagramImage.canvas.toBlob(function (blob) {
+          diagramImage.remove();
+          blobToBase64(blob, function (base64) {
+            resolve({
+              width: diagramViewer.camera.diagramSize.w,
+              height: diagramViewer.camera.diagramSize.h,
+              data: base64,
+              extension: ".png",
+            });
+          });
+        }, "image/png");
       });
     });
   };
@@ -1382,6 +1450,10 @@
     }
   };
 
+  var timeout = function timeout(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
   /********************************************************************************
     Configs : add trigger for single page
     *********************************************************************************/
@@ -1405,7 +1477,9 @@
   if (cwAPI.customLibs.utils.glossary === undefined) {
     cwAPI.customLibs.utils.glossary = {};
   }
+
   cwAPI.customLibs.utils.version = 2.5;
+  cwAPI.customLibs.utils.timeout = timeout;
   cwAPI.customLibs.utils.layoutsByNodeId = {};
   cwAPI.customLibs.utils.getItemDisplayString = getItemDisplayString;
   cwAPI.customLibs.utils.manageHiddenNodes = manageHiddenNodes;
@@ -1419,6 +1493,8 @@
   cwAPI.customLibs.utils.copyToImageClipboard = copyToImageClipboard;
   cwAPI.customLibs.utils.copyCanvasToClipboard = copyCanvasToClipboard;
   cwAPI.customLibs.utils.getBlobFromCanva = getBlobFromCanva;
+  cwAPI.customLibs.utils.getImgFromDiagram = getImgFromDiagram;
+  cwAPI.customLibs.utils.getImgFromNetwork = getImgFromNetwork;
 
   cwAPI.customLibs.utils.openDiagramPopoutWithID = cwApi.customFunction.openDiagramPopoutWithID;
 
@@ -1453,4 +1529,6 @@
   cwApi.customLibs.utils.sendIndexContext = sendIndexContext;
   cwAPI.customLibs.utils.sendSingleContext = sendSingleContext;
   cwAPI.customLibs.utils.clickSingleContext = clickSingleContext;
+
+  cwAPI.customLibs.doActionForAll.printButton = enablePrintButton;
 })(cwAPI, jQuery);

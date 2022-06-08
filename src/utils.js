@@ -1381,7 +1381,7 @@
         if (apl.LayoutName === "cw-grid") {
           return apl.config.columns.some(function (col) {
             return col.displays.some(function (display) {
-              if (display.uuid.toString() === displayId && display.giveIndexContext) {
+              if (display.uuid && display.uuid.toString() === displayId && display.giveIndexContext) {
                 var newEvent = document.createEvent("Event");
                 newEvent.data = contextIds;
                 newEvent.initEvent("indexContext from " + displayId, true, true);
@@ -1395,7 +1395,7 @@
     } else {
       cwAPI.customLibs.utils.getCustomLayoutConfiguration("homePage").columns.some(function (col) {
         return col.displays.some(function (display) {
-          if (display.uuid.toString() === displayId && display.giveIndexContext) {
+          if (display.uuid && display.uuid.toString() === displayId && display.giveIndexContext) {
             var newEvent = document.createEvent("Event");
             newEvent.data = contextIds;
             newEvent.initEvent("indexContext from " + displayId, true, true);
@@ -1413,7 +1413,7 @@
         if (apl.LayoutName === "cw-grid") {
           return apl.config.columns.some(function (col) {
             return col.displays.some(function (display) {
-              if (display.uuid.toString() === displayId && display.giveSingleContext) {
+              if (display.uuid && display.uuid.toString() === displayId && display.giveSingleContext) {
                 var newEvent = document.createEvent("Event");
                 newEvent.id = id;
                 newEvent.scriptname = scriptname;
@@ -1429,7 +1429,7 @@
     } else {
       cwAPI.customLibs.utils.getCustomLayoutConfiguration("homePage").columns.some(function (col) {
         return col.displays.some(function (display) {
-          if (display.uuid.toString() === displayId && display.giveSingleContext) {
+          if (display.uuid && display.uuid.toString() === displayId && display.giveSingleContext) {
             var newEvent = document.createEvent("Event");
             newEvent.id = id;
             newEvent.scriptname = scriptname;

@@ -10,7 +10,7 @@
     this.results = [];
     this.inTab = false;
     this.name = name;
-    this.title = "";
+    this.title = name;
   };
 
   cwPdf.prototype.setPdfDimension = function () {

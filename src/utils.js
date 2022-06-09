@@ -321,6 +321,7 @@
     let isInDisplay = document.querySelector(".homePage_evolveView") ? true : false;
     markedForDeletion = cwApi.isObjectMarkedForDeletion(item) ? " markedForDeletion" : "";
     if (isInDisplay) {
+      let cleanLabel = itemLabel.includes("<") ? item.name : itemLabel;
       linkTag =
         '<a class="contextClick ' +
         nodeID +
@@ -331,9 +332,11 @@
         "'," +
         item.object_id +
         ",'" +
-        itemLabel
+        cleanLabel
           .replace(/<@.*?@>/, "")
           .replace(/<#.*?#>/, "")
+          .replaceAll("(", "\\(")
+          .replaceAll(")", "\\)")
           .replaceAll('"', '\\"')
           .replaceAll("'", "\\'") +
         "'" +

@@ -851,7 +851,7 @@
       } else {
         objPropertyValue = iAsso ? item.iProperties[filter.Asset] : item.properties[filter.Asset];
       }
-      if (value.replace) {
+      if (value.replace && cwAPI.isLive()) {
         value = value.replace("@currentCwUserName", cwAPI.cwUser.getCurrentUserItem().name);
         value = value.replace("@currentCwUserId", cwAPI.cwUser.getCurrentUserItem().object_id);
       }

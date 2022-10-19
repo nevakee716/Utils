@@ -71,7 +71,7 @@
               fileref.setAttribute("src", filename);
               if (typeof fileref != "undefined") document.getElementsByTagName("head")[0].appendChild(fileref);
             }
-            loadjscssfile("/evolve/Common/modules/jspdf/jspdf.min.js?" + cwApi.getDeployNumber());
+            loadjscssfile(cwAPI.getServerPath() + "Common/modules/jspdf/jspdf.min.js?" + cwApi.getDeployNumber());
           }
 
           $("#cw_print_btn").click(async () => {
@@ -272,10 +272,7 @@
   var getCustomDisplayStringWithOutHTML = function (cds, item) {
     var p = new cwApi.CwDisplayProperties(cds, false);
     let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
-    var defaultIcon = "fa fa-external-link";
-    if (config) {
-      if (config.defaultIcon) defaultIcon = config.defaultIcon;
-    }
+
     let _item = JSON.parse(JSON.stringify(item));
 
     Object.keys(_item.properties).forEach(function (p) {
@@ -1119,7 +1116,7 @@
         fileref.setAttribute("src", filename);
         if (typeof fileref != "undefined") document.getElementsByTagName("head")[0].appendChild(fileref);
       }
-      loadjscssfile("/evolve/Common/modules/docxTemplater/docxTemplater.concat.js?" + cwApi.getDeployNumber());
+      loadjscssfile(cwAPI.getServerPath() + "Common/modules/docxTemplater/docxTemplater.concat.js?" + cwApi.getDeployNumber());
     }
   };
 
@@ -1299,7 +1296,7 @@
     var xmlhttp = new XMLHttpRequest();
     var self = this;
     //replace second argument with the path to your Secret Server webservices
-    xmlhttp.open("POST", window.location.origin + "/evolve/CWFileHandling/CwFileHandling.asmx", true);
+    xmlhttp.open("POST", window.location.origin + cwAPI.getServerPath() + "CWFileHandling/CwFileHandling.asmx", true);
 
     //create the SOAP request
     //replace username, password (and org + domain, if necessary) with the appropriate info

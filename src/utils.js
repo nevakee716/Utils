@@ -71,7 +71,7 @@
               fileref.setAttribute("src", filename);
               if (typeof fileref != "undefined") document.getElementsByTagName("head")[0].appendChild(fileref);
             }
-            loadjscssfile(cwAPI.getServerPath() + "Common/modules/jspdf/jspdf.min.js?" + cwApi.getDeployNumber());
+            loadjscssfile("/evolve/Common/modules/jspdf/jspdf.min.js?" + cwApi.getDeployNumber());
           }
 
           $("#cw_print_btn").click(async () => {
@@ -272,7 +272,10 @@
   var getCustomDisplayStringWithOutHTML = function (cds, item) {
     var p = new cwApi.CwDisplayProperties(cds, false);
     let config = cwAPI.customLibs.utils.getCustomLayoutConfiguration("cdsEnhanced");
-
+    var defaultIcon = "fa fa-external-link";
+    if (config) {
+      if (config.defaultIcon) defaultIcon = config.defaultIcon;
+    }
     let _item = JSON.parse(JSON.stringify(item));
 
     Object.keys(_item.properties).forEach(function (p) {
@@ -592,15 +595,54 @@
     elementHTML.setAttribute("style", "height:" + canvaHeight + "px");
   };
 
-  var getCustomLayoutConfiguration = function (configName) {
+  var getCustomLayoutConfiguration= function (configName) {
+    if(cwAPI.cwConfigs.EnabledVersion.indexOf("v2022") !== -1) {
+      return getCustomLayoutConfiguration_new(configName);
+    } else {
+      return getCustomLayoutConfiguration_old(configName);
+    }
+  };
+
+  var getCustomLayoutConfiguration_new = function (configName) {
+    let localConfiguration = localStorage.getItem(getConfigLocalStorageKey(0));
+    //if value found in local storage
+    if (localConfiguration) {
+        try {
+            cwApi.customLibs.utils.customLayoutConfiguration = JSON.parse(localConfiguration);
+        } catch (e) {
+            return null;
+        }
+    } else if (cwApi.customLibs.utils.customLayoutConfiguration === undefined) {
+        try {
+            //get configuration Json from API
+            let tempJsonResult = getWorkflowJsonConfigFromApi();
+            let parsedConfigJson = JSON.parse(cleanJSON(tempJsonResult.ConfigJson));
+            cwApi.customLibs.utils.customLayoutConfiguration = parsedConfigJson;
+            cwApi.customLibs.utils.configurationVersionNumber = tempJsonResult.ConfigVersionNumber;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    if (configName === undefined)
+        return cwApi.customLibs.utils.customLayoutConfiguration;
+    else
+        return cwApi.customLibs.utils.customLayoutConfiguration[configName];
+  };
+
+  var cleanJSON = function (json) {
+    let c = json.replaceAll('\\\\\\"', "#§#§#");
+    c = c.replaceAll('\\"', '"');
+    c = c.replaceAll("#§#§#", '\\"');
+    return c;
+  };
+
+  
+  var getCustomLayoutConfiguration_old = function (configName) {
     let localConfiguration = localStorage.getItem(cwApi.getSiteId() + "_" + cwApi.getDeployNumber() + "_coffeeMakerConfiguration");
 
-    var cleanJSON = function (json) {
-      let c = json.replaceAll('\\\\\\"', "#§#§#");
-      c = c.replaceAll('\\"', '"');
-      c = c.replaceAll("#§#§#", '\\"');
-      return c;
-    };
+
 
     if (localConfiguration) {
       try {
@@ -638,6 +680,97 @@
     if (configName === undefined) return cwApi.customLibs.utils.customLayoutConfiguration;
     else return cwApi.customLibs.utils.customLayoutConfiguration[configName];
   };
+
+  var getWorkflowConfigVersionNumber = function () {
+    try {
+        //get configuration Json from API
+        let configNumber = getWorkflowJsonConfigFromApi("ConfigVersionNumber");
+        return configNumber;
+    } catch (e) {
+        return null;
+    }
+}
+
+var getConfigLocalStorageKey = function (verNum) {
+    if (!verNum) {
+        verNum = getWorkflowConfigVersionNumber();
+    }
+    return cwApi.getSiteId() + "_" + verNum + "_coffeeMakerConfiguration";
+}
+
+var getWorkflowJsonConfigFromApi = function (prop) {
+    //Sam
+    let outputJson;
+    let getJsonConfigApiUrl = cwApi.getLiveServerURL() + "AdvancedWorkflow/GetConfig";
+    var result = $.ajax({
+        url: getJsonConfigApiUrl,
+        type: 'GET',
+        async: false,
+        dataType: 'json', // added data type
+        success: function (res) {
+            if (prop) {
+                switch (prop) {
+                    case "ConfigJson":
+                        outputJson = JSON.parse(cleanJSON(res.result["ConfigJson"]));
+                        break;
+                    case "ConfigVersionNumber":
+                        outputJson = res.result["ConfigVersionNumber"];
+                        break;
+                }
+            }
+            else
+                outputJson = res.result;
+        }
+    });
+    return outputJson;
+};
+
+var getDefaultWorkflowLayoutSchema = function (callback) {
+    let url = cwApi.getLiveServerURL() + "AdvancedWorkflow/GetDefaultLayoutSchema";
+    $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+            if (res.status === 'Ok' && res.result.Schema) {
+                var schema = JSON.parse(res.result.Schema);
+                return callback && callback(schema);
+            }
+  },
+    });
+};
+
+var saveCustomLayoutConfiguration = function (configJsonForSave) {
+    let outputJson;
+    let dataForPost = { configJson: JSON.stringify(configJsonForSave) };
+    let postJsonConfigApiUrl = cwApi.getLiveServerURL() + "AdvancedWorkflow/UpdateConfig";
+    var result = $.ajax({
+        url: postJsonConfigApiUrl,
+        type: 'POST',
+        data: dataForPost,
+        dataType: 'json',
+        async: false,
+        success: function (res) {
+            outputJson = res;
+        }
+    });
+    return outputJson;
+};
+
+var removeLocalConfiguration = function () {
+    var localKeys = []
+    for (var i = 0, len = localStorage.length; i < len; i++) {
+        var key = localStorage.key(i);
+        if (key.startsWith(cwApi.getSiteId() + "_") && key.endsWith("_coffeeMakerConfiguration")) {
+            localKeys.push(key);
+        }
+    }
+
+    for (var k = 0; k < localKeys.length; k++) {
+        localStorage.removeItem(localKeys[k]);
+    }
+};
+
 
   var setupWebSocketForSocial = function (callback) {
     cwApi.CwWebSocketConnection = null;
@@ -1116,7 +1249,7 @@
         fileref.setAttribute("src", filename);
         if (typeof fileref != "undefined") document.getElementsByTagName("head")[0].appendChild(fileref);
       }
-      loadjscssfile(cwAPI.getServerPath() + "Common/modules/docxTemplater/docxTemplater.concat.js?" + cwApi.getDeployNumber());
+      loadjscssfile("/evolve/Common/modules/docxTemplater/docxTemplater.concat.js?" + cwApi.getDeployNumber());
     }
   };
 
@@ -1296,7 +1429,7 @@
     var xmlhttp = new XMLHttpRequest();
     var self = this;
     //replace second argument with the path to your Secret Server webservices
-    xmlhttp.open("POST", window.location.origin + cwAPI.getServerPath() + "CWFileHandling/CwFileHandling.asmx", true);
+    xmlhttp.open("POST", window.location.origin + "/evolve/CWFileHandling/CwFileHandling.asmx", true);
 
     //create the SOAP request
     //replace username, password (and org + domain, if necessary) with the appropriate info
@@ -1509,7 +1642,13 @@
   cwAPI.customLibs.utils.getColorFromItemValue = getColorFromItemValue;
   cwAPI.customLibs.utils.getCssStyle = get_style_rule_value;
 
+  cwAPI.customLibs.utils.getWorkflowConfigVersionNumber = getWorkflowConfigVersionNumber;
   cwAPI.customLibs.utils.getCustomLayoutConfiguration = getCustomLayoutConfiguration;
+  cwAPI.customLibs.utils.getConfigLocalStorageKey = getConfigLocalStorageKey;
+  cwAPI.customLibs.utils.removeLocalConfiguration = removeLocalConfiguration;
+  cwAPI.customLibs.utils.saveCustomLayoutConfiguration = saveCustomLayoutConfiguration;
+  cwAPI.customLibs.utils.getDefaultWorkflowLayoutSchema = getDefaultWorkflowLayoutSchema;
+
   cwAPI.customLibs.utils.setupWebSocketForSocial = setupWebSocketForSocial;
   cwAPI.customLibs.utils.cwFilter = cwFilter;
   cwAPI.customLibs.utils.createPopOutFormultipleObjects = createPopOutFormultipleObjects;

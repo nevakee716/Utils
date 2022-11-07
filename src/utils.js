@@ -499,7 +499,7 @@
   };
 
   var shapeToImage = function (obj, diagramTemplate, errors, size) {
-    console.log("Drawing " + obj.name + " with " + diagramTemplate.name);
+    //console.log("Drawing " + obj.name + " with " + diagramTemplate.name);
     if (errors === undefined) errors = {};
     var self = this;
     let palette;
@@ -595,8 +595,8 @@
     elementHTML.setAttribute("style", "height:" + canvaHeight + "px");
   };
 
-  var getCustomLayoutConfiguration= function (configName) {
-    if(cwAPI.cwConfigs.EnabledVersion.indexOf("v2022") !== -1) {
+  var getCustomLayoutConfiguration = function (configName) {
+    if (cwAPI.cwConfigs.EnabledVersion.indexOf("v2022") !== -1) {
       return getCustomLayoutConfiguration_new(configName);
     } else {
       return getCustomLayoutConfiguration_old(configName);
@@ -607,28 +607,26 @@
     let localConfiguration = localStorage.getItem(getConfigLocalStorageKey(0));
     //if value found in local storage
     if (localConfiguration) {
-        try {
-            cwApi.customLibs.utils.customLayoutConfiguration = JSON.parse(localConfiguration);
-        } catch (e) {
-            return null;
-        }
+      try {
+        cwApi.customLibs.utils.customLayoutConfiguration = JSON.parse(localConfiguration);
+      } catch (e) {
+        return null;
+      }
     } else if (cwApi.customLibs.utils.customLayoutConfiguration === undefined) {
-        try {
-            //get configuration Json from API
-            let tempJsonResult = getWorkflowJsonConfigFromApi();
-            let parsedConfigJson = JSON.parse(cleanJSON(tempJsonResult.ConfigJson));
-            cwApi.customLibs.utils.customLayoutConfiguration = parsedConfigJson;
-            cwApi.customLibs.utils.configurationVersionNumber = tempJsonResult.ConfigVersionNumber;
-        } catch (e) {
-            console.log(e);
-            return null;
-        }
+      try {
+        //get configuration Json from API
+        let tempJsonResult = getWorkflowJsonConfigFromApi();
+        let parsedConfigJson = JSON.parse(cleanJSON(tempJsonResult.ConfigJson));
+        cwApi.customLibs.utils.customLayoutConfiguration = parsedConfigJson;
+        cwApi.customLibs.utils.configurationVersionNumber = tempJsonResult.ConfigVersionNumber;
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
     }
 
-    if (configName === undefined)
-        return cwApi.customLibs.utils.customLayoutConfiguration;
-    else
-        return cwApi.customLibs.utils.customLayoutConfiguration[configName];
+    if (configName === undefined) return cwApi.customLibs.utils.customLayoutConfiguration;
+    else return cwApi.customLibs.utils.customLayoutConfiguration[configName];
   };
 
   var cleanJSON = function (json) {
@@ -638,11 +636,8 @@
     return c;
   };
 
-  
   var getCustomLayoutConfiguration_old = function (configName) {
     let localConfiguration = localStorage.getItem(cwApi.getSiteId() + "_" + cwApi.getDeployNumber() + "_coffeeMakerConfiguration");
-
-
 
     if (localConfiguration) {
       try {
@@ -683,94 +678,91 @@
 
   var getWorkflowConfigVersionNumber = function () {
     try {
-        //get configuration Json from API
-        let configNumber = getWorkflowJsonConfigFromApi("ConfigVersionNumber");
-        return configNumber;
+      //get configuration Json from API
+      let configNumber = getWorkflowJsonConfigFromApi("ConfigVersionNumber");
+      return configNumber;
     } catch (e) {
-        return null;
+      return null;
     }
-}
+  };
 
-var getConfigLocalStorageKey = function (verNum) {
+  var getConfigLocalStorageKey = function (verNum) {
     if (!verNum) {
-        verNum = getWorkflowConfigVersionNumber();
+      verNum = getWorkflowConfigVersionNumber();
     }
     return cwApi.getSiteId() + "_" + verNum + "_coffeeMakerConfiguration";
-}
+  };
 
-var getWorkflowJsonConfigFromApi = function (prop) {
+  var getWorkflowJsonConfigFromApi = function (prop) {
     //Sam
     let outputJson;
     let getJsonConfigApiUrl = cwApi.getLiveServerURL() + "AdvancedWorkflow/GetConfig";
     var result = $.ajax({
-        url: getJsonConfigApiUrl,
-        type: 'GET',
-        async: false,
-        dataType: 'json', // added data type
-        success: function (res) {
-            if (prop) {
-                switch (prop) {
-                    case "ConfigJson":
-                        outputJson = JSON.parse(cleanJSON(res.result["ConfigJson"]));
-                        break;
-                    case "ConfigVersionNumber":
-                        outputJson = res.result["ConfigVersionNumber"];
-                        break;
-                }
-            }
-            else
-                outputJson = res.result;
-        }
+      url: getJsonConfigApiUrl,
+      type: "GET",
+      async: false,
+      dataType: "json", // added data type
+      success: function (res) {
+        if (prop) {
+          switch (prop) {
+            case "ConfigJson":
+              outputJson = JSON.parse(cleanJSON(res.result["ConfigJson"]));
+              break;
+            case "ConfigVersionNumber":
+              outputJson = res.result["ConfigVersionNumber"];
+              break;
+          }
+        } else outputJson = res.result;
+      },
     });
     return outputJson;
-};
+  };
 
-var getDefaultWorkflowLayoutSchema = function (callback) {
+  var getDefaultWorkflowLayoutSchema = function (callback) {
     let url = cwApi.getLiveServerURL() + "AdvancedWorkflow/GetDefaultLayoutSchema";
     $.ajax({
-        url: url,
-        type: 'GET',
-        dataType: 'json',
-        success: function (res) {
-            if (res.status === 'Ok' && res.result.Schema) {
-                var schema = JSON.parse(res.result.Schema);
-                return callback && callback(schema);
-            }
-  },
+      url: url,
+      type: "GET",
+      dataType: "json",
+      success: function (res) {
+        if (res.status === "Ok" && res.result.Schema) {
+          var schema = JSON.parse(res.result.Schema);
+          return callback && callback(schema);
+        }
+      },
     });
-};
+  };
 
-var saveCustomLayoutConfiguration = function (configJsonForSave) {
+  var saveCustomLayoutConfiguration = function (configJsonForSave) {
     let outputJson;
     let dataForPost = { configJson: JSON.stringify(configJsonForSave) };
     let postJsonConfigApiUrl = cwApi.getLiveServerURL() + "AdvancedWorkflow/UpdateConfig";
     var result = $.ajax({
-        url: postJsonConfigApiUrl,
-        type: 'POST',
-        data: dataForPost,
-        dataType: 'json',
-        async: false,
-        success: function (res) {
-            outputJson = res;
-        }
+      url: postJsonConfigApiUrl,
+      type: "POST",
+      data: dataForPost,
+      dataType: "json",
+      async: false,
+      success: function (res) {
+        outputJson = res;
+      },
     });
     return outputJson;
-};
+  };
 
-var removeLocalConfiguration = function () {
-    var localKeys = []
+  var removeLocalConfiguration = function () {
+    var localKeys = [];
     for (var i = 0, len = localStorage.length; i < len; i++) {
-        var key = localStorage.key(i);
-        if (key.startsWith(cwApi.getSiteId() + "_") && key.endsWith("_coffeeMakerConfiguration")) {
-            localKeys.push(key);
-        }
+      var key = localStorage.key(i);
+      if (key.startsWith(cwApi.getSiteId() + "_") && key.endsWith("_coffeeMakerConfiguration")) {
+        localKeys.push(key);
+      }
     }
 
     for (var k = 0; k < localKeys.length; k++) {
-        localStorage.removeItem(localKeys[k]);
+      localStorage.removeItem(localKeys[k]);
     }
-};
-
+  };
 
   var setupWebSocketForSocial = function (callback) {
     cwApi.CwWebSocketConnection = null;
@@ -1132,6 +1124,11 @@ var removeLocalConfiguration = function () {
 
   var getColorFromItemValue = function (item, propertyTypeScriptName) {
     let rColor = "#AAA";
+    return getIconAndColorFromItemValue(item, propertyTypeScriptName).color ?? rColor;
+  };
+
+  var getIconAndColorFromItemValue = function (item, propertyTypeScriptName) {
+    let rColor, rIcon;
     let CLCconfig = cwApi.customLibs.utils.getCustomLayoutConfiguration("property");
     let prop = cwApi.mm.getProperty(item.objectTypeScriptName, propertyTypeScriptName);
     let value = item.properties[propertyTypeScriptName];
@@ -1171,8 +1168,12 @@ var removeLocalConfiguration = function () {
     }
     if (CLCconfig && CLCconfig.iconColor) rColor = CLCconfig.iconColor;
     if (CLCconfig && CLCconfig.valueColor) rColor = CLCconfig.valueColor;
+    if (CLCconfig && CLCconfig.icon) rIcon = CLCconfig.icon;
 
-    return rColor;
+    return {
+      color: rColor,
+      icon: rIcon,
+    };
   };
 
   function get_style_rule_value(selector, style) {
@@ -1640,6 +1641,8 @@ var removeLocalConfiguration = function () {
   cwAPI.customLibs.utils.getCustomDisplayString = getCustomDisplayString;
   cwAPI.customLibs.utils.getCustomDisplayStringWithOutHTML = getCustomDisplayStringWithOutHTML;
   cwAPI.customLibs.utils.getColorFromItemValue = getColorFromItemValue;
+  cwAPI.customLibs.utils.getIconAndColorFromItemValue = getIconAndColorFromItemValue;
+
   cwAPI.customLibs.utils.getCssStyle = get_style_rule_value;
 
   cwAPI.customLibs.utils.getWorkflowConfigVersionNumber = getWorkflowConfigVersionNumber;

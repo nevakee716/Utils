@@ -679,8 +679,15 @@
   var getWorkflowConfigVersionNumber = function () {
     try {
       //get configuration Json from API
-      let configNumber = getWorkflowJsonConfigFromApi("ConfigVersionNumber");
-      return configNumber;
+      if (!cwApi.customLibs.utils.lastTimeGettingConfig) {
+        cwApi.customLibs.utils.lastTimeGettingConfig = new Date();
+        return getWorkflowJsonConfigFromApi("ConfigVersionNumber");
+      } else if (cwApi.customLibs.utils.lastTimeGettingConfig.getTime() + 1000 * 60 * 5 < new Date().getTime()) {
+        cwApi.customLibs.utils.lastTimeGettingConfig = new Date();
+        return getWorkflowJsonConfigFromApi("ConfigVersionNumber");
+      } else {
+        return cwApi.customLibs.utils.configurationVersionNumber;
+      }
     } catch (e) {
       return null;
     }

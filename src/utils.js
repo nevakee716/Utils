@@ -633,6 +633,8 @@
     let c = json.replaceAll('\\\\\\"', "#§#§#");
     c = c.replaceAll('\\"', '"');
     c = c.replaceAll("#§#§#", '\\"');
+    c = c.replaceAll("<body>{", "{");
+    c = c.replaceAll("}</body></html>", "}");
     return c;
   };
 

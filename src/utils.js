@@ -1681,5 +1681,9 @@
   cwAPI.customLibs.utils.sendSingleContext = sendSingleContext;
   cwAPI.customLibs.utils.clickSingleContext = clickSingleContext;
 
+  cwAPI.customLibs.utils.cleanJSON = cleanJSON;
+  
+
+
   cwAPI.customLibs.doActionForAll.printButton = enablePrintButton;
 })(cwAPI, jQuery);

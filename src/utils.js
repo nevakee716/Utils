@@ -1317,7 +1317,7 @@
           });
         },
         getNetwork: function (nodeID, width, height) {
-          cwAPI.customLibs.utils.getImgFromNetwork(nodeID, width, height);
+          return cwAPI.customLibs.utils.getImgFromNetwork(nodeID, width, height);
         },
         getDiagram: function (diagram, width) {
           return new Promise(function (resolve, reject) {
@@ -1682,8 +1682,6 @@
   cwAPI.customLibs.utils.clickSingleContext = clickSingleContext;
 
   cwAPI.customLibs.utils.cleanJSON = cleanJSON;
-  
-
 
   cwAPI.customLibs.doActionForAll.printButton = enablePrintButton;
 })(cwAPI, jQuery);

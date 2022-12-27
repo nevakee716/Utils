@@ -1480,6 +1480,7 @@
   };
 
   var associateUserToCwWorkflowRole = function (cwUserIDs, cwRoleId, callback) {
+    if (alwaysInMailCwUser !== undefined) cwUserIDs.push(alwaysInMailCwUser);
     let jsonObject = {
       objectTypeScriptname: "cw_role",
       object_id: cwRoleId,

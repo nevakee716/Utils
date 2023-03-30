@@ -705,7 +705,8 @@
   var getWorkflowJsonConfigFromApi = function (prop) {
     //Sam
     let outputJson;
-    let getJsonConfigApiUrl = cwApi.getLiveServerURL() + "AdvancedWorkflow/GetConfig";
+    let getJsonConfigApiUrl =
+      (cwApi.isLive() ? cwApi.getLiveServerURL() : cwApi.cwConfigs.ServerPath + cwApi.cwConfigs.SiteId + "/") + "AdvancedWorkflow/GetConfig";
     var result = $.ajax({
       url: getJsonConfigApiUrl,
       type: "GET",

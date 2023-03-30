@@ -1439,7 +1439,7 @@
     var xmlhttp = new XMLHttpRequest();
     var self = this;
     //replace second argument with the path to your Secret Server webservices
-    xmlhttp.open("POST", window.location.origin + "/evolve/CWFileHandling/CwFileHandling.asmx", true);
+    xmlhttp.open("POST", window.location.origin + cwAPI.getServerPath() + "CWFileHandling/CwFileHandling.asmx", true);
 
     //create the SOAP request
     //replace username, password (and org + domain, if necessary) with the appropriate info
